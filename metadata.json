@@ -1,6 +1,8 @@
 {
-  "name": "Future Redesign Lab",
+  "name": "Remix: Future Redesign Lab",
   "description": "A futuristic AI-powered Design Thinking Simulation for ZupSkill designed for students and youth to solve real-world problems creatively.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

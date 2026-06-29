@@ -1100,7 +1100,7 @@ export default function App() {
                     isOpen={showStageIntro}
                     stageConfig={STAGE_INTROS[currentStage]}
                     onContinue={handleCloseStageIntro}
-                    onSkip={handleSkipStageIntro}
+                    onClose={handleSkipStageIntro}
                   />
                 )}
 

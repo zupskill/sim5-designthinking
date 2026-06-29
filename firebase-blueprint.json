@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with gamified statistics and quick profile setup preferences",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Authentication UID"
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's full name from Google Auth or manually refined name"
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's account email address"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "The user's Google Auth profile avatar URL"
+        },
+        "college": {
+          "type": "string",
+          "description": "Institution name collected in onboarding"
+        },
+        "degree": {
+          "type": "string",
+          "description": "Degree or program of study"
+        },
+        "yearOfStudy": {
+          "type": "string",
+          "description": "Current year of study at the college"
+        },
+        "primaryInterest": {
+          "type": "string",
+          "description": "Self-selected primary interest area"
+        },
+        "careerGoal": {
+          "type": "string",
+          "description": "Self-selected career goal (optional)"
+        },
+        "xp": {
+          "type": "integer",
+          "description": "Gamified Experience Points"
+        },
+        "level": {
+          "type": "string",
+          "description": "Gamified Title based on XP limits"
+        },
+        "unlockedBadgeIds": {
+          "type": "array",
+          "description": "List of unlocked badges"
+        },
+        "problemsSolved": {
+          "type": "integer",
+          "description": "Count of successfully solved design cycles"
+        },
+        "ideasGenerated": {
+          "type": "integer",
+          "description": "Count of ideas generated inside the simulation"
+        },
+        "prototypesBuilt": {
+          "type": "integer",
+          "description": "Count of simulated visual prototypes designed"
+        },
+        "isOnboarded": {
+          "type": "boolean",
+          "description": "Indicates if the interactive quick onboarding page is completed"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this user record was registered"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this user record was updated"
+        }
+      },
+      "required": [
+        "uid",
+        "username",
+        "email",
+        "xp",
+        "level",
+        "isOnboarded"
+      ]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Single-source profile mapping for persistent simulation status"
+    }
+  }
+}

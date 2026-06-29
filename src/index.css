@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .cyber-grid {
+    background-color: #05070A;
+    background-image: 
+      linear-gradient(rgba(0, 242, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 242, 255, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.25);
+    border: 1px solid rgba(0, 242, 255, 0.4);
+  }
+  
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(191, 0, 255, 0.25);
+    border: 1px solid rgba(191, 0, 255, 0.4);
+  }
+
+  .glow-orange {
+    box-shadow: 0 0 20px rgba(242, 125, 38, 0.25);
+    border: 1px solid rgba(242, 125, 38, 0.4);
+  }
+
+  .glass-panel {
+    background: rgba(10, 15, 26, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+  }
+
+  .sticky-note {
+    transform: rotate(-1deg);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .sticky-note:nth-child(even) {
+    transform: rotate(1.5deg);
+  }
+
+  .sticky-note:hover {
+    transform: rotate(0deg) scale(1.03);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Custom scrollbar */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Global Smooth Transitions for Theme Switching */
+html, body, header, main, footer, section, div, button, input, textarea, p, span, h1, h2, h3, h4, h5, h6, select, label {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 400ms !important;
+}
+
+body {
+  background-color: #05070A;
+  color: #f8fafc;
+}
+
+/* ==========================================================================
+   LIGHT THEME STYLING & VARIABLE OVERRIDES
+   ========================================================================== */
+
+/* Core page wrappers and main backgrounds */
+.light, .light body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.light main {
+  background-color: #f8fafc !important;
+}
+
+.light header {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light footer {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+/* Background Overrides */
+.light .bg-slate-950,
+.light .bg-slate-950\/60,
+.light .bg-slate-955,
+.light .bg-slate-905\/60 {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-slate-950\/70,
+.light .bg-slate-950\/80 {
+  background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+.light .bg-slate-900,
+.light .bg-slate-900\/80,
+.light .bg-slate-905,
+.light .bg-slate-910,
+.light .bg-slate-900\/70,
+.light .bg-slate-950\/50,
+.light .bg-slate-905\/70 {
+  background-color: #ffffff !important;
+}
+
+.light .bg-slate-800,
+.light .bg-slate-850,
+.light .bg-slate-800\/80,
+.light .bg-slate-850\/80,
+.light .bg-slate-900\/60,
+.light .bg-slate-910\/50,
+.light .bg-slate-950\/20,
+.light .bg-cyan-950\/20 {
+  background-color: #f1f5f9 !important;
+}
+
+/* Modals overlays background */
+.light .bg-black\/90,
+.light .bg-slate-950\/90 {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Card structures & glass designs */
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -2px rgba(15, 23, 42, 0.03) !important;
+}
+
+.light .cyber-grid {
+  background-color: #f8fafc !important;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.045) 1px, transparent 1px) !important;
+  background-size: 44px 44px;
+}
+
+.light .text-transparent {
+  color: transparent !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+}
+
+/* Text elements */
+.light .text-white,
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: #0d1527 !important;
+  font-weight: 800 !important;
+}
+
+.light .text-slate-100 {
+  color: #0d1527 !important;
+  font-weight: 600 !important;
+}
+
+.light .text-slate-200 {
+  color: #0f172a !important;
+  font-weight: 550 !important;
+}
+
+.light .text-slate-300 {
+  color: #1e293b !important;
+  font-weight: 550 !important;
+}
+
+.light .text-slate-400 {
+  color: #1e293b !important;
+  font-weight: 500 !important;
+}
+
+.light .text-slate-500 {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+.light .text-slate-600,
+.light .text-slate-605,
+.light .text-slate-650,
+.light .text-slate-700 {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+/* Global Font Weights Upgrades for Light Mode */
+.light .font-thin,
+.light .font-extralight,
+.light .font-light {
+  font-weight: 505 !important;
+}
+
+.light .font-normal {
+  font-weight: 505 !important;
+}
+
+.light p,
+.light span:not(.font-bold):not(.font-extrabold):not(.font-black),
+.light div:not(.font-bold):not(.font-extrabold):not(.font-black) {
+  font-weight: 505 !important;
+}
+
+.light .font-semibold {
+  font-weight: 700 !important;
+}
+
+.light .font-medium {
+  font-weight: 600 !important;
+}
+
+.light .font-bold {
+  font-weight: 700 !important;
+}
+
+.light .font-extrabold {
+  font-weight: 800 !important;
+}
+
+.light .font-black {
+  font-weight: 900 !important;
+}
+
+/* Color accents readable in Light Mode with high-contrast rules */
+.light .text-cyan-400,
+.light .text-cyan-500 {
+  color: #0e7490 !important;
+  font-weight: 700 !important;
+}
+.light .text-purple-400,
+.light .text-purple-500 {
+  color: #6d28d9 !important;
+  font-weight: 700 !important;
+}
+.light .text-indigo-400,
+.light .text-indigo-500 {
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+.light .text-yellow-400,
+.light .text-yellow-500,
+.light .text-amber-400,
+.light .text-amber-500 {
+  color: #9a3412 !important;
+  font-weight: 700 !important;
+}
+.light .text-emerald-400,
+.light .text-emerald-500 {
+  color: #047857 !important;
+  font-weight: 700 !important;
+}
+
+/* Background gradient overlays for headers and labels */
+.light .from-cyan-400\/10,
+.light .bg-cyan-500\/10 {
+  background-color: rgba(14, 116, 144, 0.12) !important;
+}
+
+.light .text-cyan-200 {
+  color: #0e7490 !important;
+  font-weight: 700 !important;
+}
+
+/* Input structures and values */
+.light input,
+.light textarea,
+.light select {
+  background-color: #ffffff !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+  font-weight: 550 !important;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.light label, .light .label {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Border overrides */
+.light .border-slate-800,
+.light .border-slate-850,
+.light .border-slate-855,
+.light .border-slate-900,
+.light .border-slate-905,
+.light .border-slate-950 {
+  border-color: #94a3b8 !important;
+}
+
+/* Keep sticky note colors contrast and vibrant */
+.light .bg-yellow-250 {
+  background-color: #fef08a !important;
+  color: #854d0e !important;
+}
+.light .bg-cyan-200 {
+  background-color: #cffafe !important;
+  color: #155e75 !important;
+}
+.light .bg-fuchsia-250 {
+  background-color: #fae8ff !important;
+  color: #86198f !important;
+}
+
+/* Specific buttons logic mapping */
+.light .bg-slate-900:hover,
+.light .bg-slate-850:hover,
+.light .bg-slate-800:hover {
+  background-color: #cbd5e1 !important;
+}
+
+/* Shimmer Animation Keyframe */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+

@@ -1,0 +1,97 @@
+# =============================================================================
+# Mirror Sync: Lovable source repo  ->  zupskill/sim5-designthinking  ->  Vercel
+# =============================================================================
+#
+# HOW THE SYNC WORKS
+# ------------------
+# 1. Triggered on every push to the `main` branch of THIS repository.
+# 2. Checks out the full git history (fetch-depth: 0) so all commits, branches
+#    and tags are available locally on the runner.
+# 3. Validates that the `PAT` secret is configured. The job fails fast with a
+#    clear message if it is missing.
+# 4. Adds the destination repository as a `mirror` remote, authenticating with
+#    a GitHub Personal Access Token via the `x-access-token` scheme.
+# 5. Force-pushes every branch (`--all --force`) and every tag (`--tags
+#    --force`) so the destination becomes an EXACT mirror of this repository.
+#
+# Vercel is connected to the destination repo (zupskill/sim5-designthinking), so each
+# successful sync automatically triggers a new Vercel deployment.
+#
+# HOW TO CONFIGURE THE `PAT` SECRET
+# ---------------------------------
+# 1. Create a GitHub Personal Access Token that has `repo` (or at minimum
+#    `contents: write` on the destination repo via a fine-grained token).
+#    -> https://github.com/settings/tokens
+# 2. In THIS repository on GitHub, go to:
+#    Settings -> Secrets and variables -> Actions -> New repository secret
+# 3. Name the secret exactly: PAT
+# 4. Paste the token value and save.
+#
+# HOW TO CHANGE THE DESTINATION REPOSITORY LATER
+# ----------------------------------------------
+# Update the `DEST_REPO` value in the `env` block below to the new
+# `owner/repo` slug. Make sure the PAT has write access to the new repo.
+# No other changes are required.
+# =============================================================================
+
+name: Sync to Mirror Repository
+
+on:
+  # Allow manual re-syncs from the Actions tab.
+  workflow_dispatch:
+
+env:
+  # Destination repository in `owner/repo` form. Change this to retarget the
+  # mirror — nothing else in the file needs to be edited.
+  DEST_REPO: zupskill/sim5-designthinking
+
+jobs:
+  sync:
+    name: Mirror push to ${{ github.event.repository.name }} destination
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 — Full clone so every branch, tag and commit is available.
+      - name: Checkout source repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Don't keep the default GITHUB_TOKEN in .git/config — we push with the PAT instead.
+          persist-credentials: false
+
+      # Step 2 — Fail fast with a clear message if the PAT secret is missing.
+      # GitHub does not expose secret values to `if:` conditions, so we check
+      # the variable inside a shell step instead.
+      - name: Validate PAT secret is configured
+        shell: bash
+        env:
+          PAT: ${{ secrets.PAT }}
+        run: |
+          if [ -z "${PAT}" ]; then
+            echo "::error::Missing required secret 'PAT'."
+            echo "::error::Add it under Settings -> Secrets and variables -> Actions."
+            echo "::error::The token must have write access to ${DEST_REPO}."
+            exit 1
+          fi
+          echo "PAT secret is configured."
+
+      # Step 3 — Force-push every branch and tag to the destination.
+      # `git push --all --force` mirrors branches; `--tags --force` mirrors tags.
+      # Together they make the destination an exact replica of this repo's refs.
+      - name: Force-sync all branches and tags to ${{ env.DEST_REPO }}
+        shell: bash
+        env:
+          PAT: ${{ secrets.PAT }}
+        run: |
+          set -euo pipefail
+
+          echo "Configuring mirror remote -> https://github.com/${DEST_REPO}.git"
+          git remote add mirror "https://x-access-token:${PAT}@github.com/${DEST_REPO}.git"
+
+          echo "Pushing all branches (force)..."
+          git push mirror --all --force
+
+          echo "Pushing all tags (force)..."
+          git push mirror --tags --force
+
+          echo "Mirror sync complete. ${DEST_REPO} now matches this repository."

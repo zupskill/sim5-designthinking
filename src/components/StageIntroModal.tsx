@@ -1,0 +1,168 @@
+import React, { useState } from "react";
+import { X, Play } from "lucide-react";
+
+export interface StageIntroConfig {
+  id: number;
+  title: string;
+  description: string;
+  bulletPoints: string[];
+  youtubeUrl: string;
+}
+
+export const STAGE_INTROS: Record<number, StageIntroConfig> = {
+  1: {
+    id: 1,
+    title: "Choose a Topic",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Identify a problem you care about",
+      "Understand why it matters",
+      "Select a topic to focus your design thinking efforts"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
+  2: {
+    id: 2,
+    title: "Empathize",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Observe real user behavior",
+      "Understand frustrations",
+      "Identify hidden needs",
+      "Build empathy before solving problems"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
+  3: {
+    id: 3,
+    title: "Define",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Synthesize your empathy findings",
+      "Draft a clear problem statement",
+      "Create a How Might We (HMW) question",
+      "Set a clear direction for ideation"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
+  4: {
+    id: 4,
+    title: "Ideate",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Brainstorm without judgment",
+      "Generate a wide variety of ideas",
+      "Think outside the box",
+      "Select the most promising solutions"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
+  5: {
+    id: 5,
+    title: "Prototype",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Build a tangible representation of your idea",
+      "Focus on the core functionality",
+      "Learn by making",
+      "Prepare for user testing"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
+  6: {
+    id: 6,
+    title: "Test",
+    description: "This short lesson introduces the purpose of this stage and prepares you before you begin.",
+    bulletPoints: [
+      "Put your prototype in front of users",
+      "Gather authentic feedback",
+      "Identify areas for improvement",
+      "Iterate based on test results"
+    ],
+    youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  }
+};
+
+interface StageIntroModalProps {
+  isOpen: boolean;
+  stageConfig: StageIntroConfig;
+  onContinue: (dontShowAgain: boolean) => void;
+  onSkip: () => void;
+}
+
+export function StageIntroModal({ isOpen, stageConfig, onContinue, onSkip }: StageIntroModalProps) {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-opacity">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-800 flex flex-col items-center text-center">
+          <div className="flex items-center gap-2 text-indigo-400 font-semibold uppercase tracking-wider text-sm mb-2">
+            <span>🎓</span> Design Thinking Briefing
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-2">{stageConfig.title}</h2>
+          <p className="text-slate-400">{stageConfig.description}</p>
+        </div>
+
+        {/* Video Container */}
+        <div className="w-full aspect-video bg-black relative">
+          <iframe
+            src={stageConfig.youtubeUrl}
+            title={`${stageConfig.title} Introduction`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full border-0"
+          ></iframe>
+        </div>
+
+        {/* Learning Summary */}
+        <div className="p-6 bg-slate-800/50">
+          <h3 className="text-lg font-medium text-white mb-3">In this stage you'll learn to:</h3>
+          <ul className="space-y-2">
+            {stageConfig.bulletPoints.map((point, index) => (
+              <li key={index} className="flex items-start gap-2 text-slate-300">
+                <span className="text-indigo-400 mt-1">•</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Footer actions */}
+        <div className="p-6 border-t border-slate-800 bg-slate-900 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <button
+              onClick={onSkip}
+              className="px-6 py-3 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              Skip Video
+            </button>
+            <button
+              onClick={() => onContinue(dontShowAgain)}
+              className="px-6 py-3 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center gap-2"
+            >
+              Continue to {stageConfig.title}
+              <Play className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="dontShowAgain"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900 cursor-pointer"
+            />
+            <label htmlFor="dontShowAgain" className="text-sm text-slate-400 cursor-pointer select-none">
+              Don't show this introduction again
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

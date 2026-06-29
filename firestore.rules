@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net: Default Deny All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Secure auth and ownership check functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Strict validation blueprint to protect fields from shadow updates
+    function isValidUser(data) {
+      return data.uid is string 
+        && data.uid.size() <= 128
+        && data.uid == request.auth.uid
+        && data.username is string
+        && data.username.size() <= 200
+        && data.email is string
+        && data.email.size() <= 200
+        && (data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 1000))
+        && (data.college == null || (data.college is string && data.college.size() <= 500))
+        && (data.degree == null || (data.degree is string && data.degree.size() <= 500))
+        && (data.yearOfStudy == null || (data.yearOfStudy is string && data.yearOfStudy.size() <= 200))
+        && (data.primaryInterest == null || (data.primaryInterest is string && data.primaryInterest.size() <= 500))
+        && (data.careerGoal == null || (data.careerGoal is string && data.careerGoal.size() <= 1000))
+        && data.xp is int
+        && data.level is string
+        && data.level.size() <= 100
+        && data.unlockedBadgeIds is list
+        && data.unlockedBadgeIds.size() <= 100
+        && data.problemsSolved is int
+        && data.ideasGenerated is int
+        && data.prototypesBuilt is int
+        && data.isOnboarded is bool;
+    }
+
+    // Users Collection rules ensuring secure individual operations
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if false;
+    }
+  }
+}

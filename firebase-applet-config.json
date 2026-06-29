@@ -1,9 +1,9 @@
 {
-  "projectId": "project-093e63d2-fa63-4ba9-bd1",
-  "appId": "1:914321725480:web:ecee017472759da634bd1d",
-  "apiKey": "AIzaSyDdrjV3xO6OXa3FUZgeIa-f4pNolQ8ibbs",
-  "authDomain": "project-093e63d2-fa63-4ba9-bd1.firebaseapp.com",
-  "storageBucket": "project-093e63d2-fa63-4ba9-bd1.firebasestorage.app",
-  "messagingSenderId": "914321725480",
-  "measurementId": ""
+  "apiKey": "",
+  "authDomain": "",
+  "projectId": "",
+  "storageBucket": "",
+  "messagingSenderId": "",
+  "appId": "",
+  "firestoreDatabaseId": ""
 }

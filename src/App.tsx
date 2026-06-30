@@ -4,6 +4,17 @@ import { MOCK_COMMUNITY_SUBMISSIONS } from "./data";
 import { motion, AnimatePresence } from "motion/react";
 import { STAGE_INTROS, StageIntroModal } from "./components/StageIntroModal";
 
+// Helper component to reset scroll on route/stage change
+const ScrollToTop = () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+  return null;
+};
+
 // Component imports
 import LandingScreen from "./components/LandingScreen";
 import AuthScreen from "./components/AuthScreen";
@@ -965,27 +976,27 @@ export default function App() {
       
       {/* PERSISTENT HEADER BAR (Rendered for in-sim / feed views) */}
       {(activeScreen === "simulation" || activeScreen === "report") && (
-        <header className="bg-slate-950 border-b border-slate-850 px-6 py-4 flex items-center justify-between z-40 sticky top-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center border border-cyan-400/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+        <header className="bg-slate-950 border-b border-slate-850 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-40 sticky top-0 overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center border border-cyan-400/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black tracking-[0.12em] text-white uppercase font-sans leading-none">
-                DT INNOVATION LAB
+              <span className="text-[9px] sm:text-xs font-black tracking-[0.12em] text-white uppercase font-sans leading-none truncate max-w-[80px] sm:max-w-none">
+                DT LAB
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             {/* Temporary Developer Reset Button */}
             <button
               onClick={() => setShowResetConfirm(true)}
               title="Developer Tool: Reset entire simulation progress and return to Topic Selection"
-              className="px-2.5 py-1.5 rounded-lg border border-red-900/35 bg-red-950/20 hover:bg-red-950/45 text-red-400 hover:text-red-300 hover:border-red-500/50 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all duration-200"
+              className="px-1.5 py-1.5 sm:px-2.5 rounded-lg border border-red-900/35 bg-red-950/20 hover:bg-red-950/45 text-red-400 hover:text-red-300 hover:border-red-500/50 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all duration-200"
             >
-              <RotateCcw className="w-3 h-3 text-red-500 animate-pulse shrink-0" />
-              <span>🔄 Reset</span>
+              <RotateCcw className="w-3.5 h-3.5 text-red-500 animate-pulse shrink-0" />
+              <span className="hidden sm:inline">🔄 Reset</span>
             </button>
 
             {/* Smooth Theme Switching Toggler */}
@@ -993,22 +1004,24 @@ export default function App() {
 
             <button
               onClick={() => window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer")}
-              className="text-xs uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-slate-400 hover:text-white"
+              className="text-xs uppercase font-bold tracking-wider px-1.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-slate-400 hover:text-white"
+              title="Community"
             >
-              <Users className="w-4 h-4 text-cyan-400" /> Community
+              <Users className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="hidden sm:inline">Community</span>
             </button>
 
             {/* Profile controller pill button */}
             <button
               onClick={() => setShowProfileModal(true)}
-              className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl px-4 py-1.5 flex items-center gap-3 text-left transition-all hover:border-cyan-500/20 cursor-pointer"
+              className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl px-2 sm:px-4 py-1.5 flex items-center gap-3 text-left transition-all hover:border-cyan-500/20 cursor-pointer shrink-0"
             >
-              <div className="w-6 h-6 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border border-cyan-400/30">
+              <div className="w-6 h-6 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border border-cyan-400/30 shrink-0">
                 <User className="w-3.5 h-3.5" />
               </div>
 
               <div className="hidden sm:block">
-                <span className="text-[10px] font-mono font-bold block text-slate-400 leading-none">{profile.username}</span>
+                <span className="text-[10px] font-mono font-bold block text-slate-400 leading-none truncate max-w-[80px]">{profile.username}</span>
                 <span className="text-[10px] text-cyan-400 leading-none">{profile.xp} XP • {profile.level}</span>
               </div>
             </button>
@@ -1028,6 +1041,8 @@ export default function App() {
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="w-full h-full"
           >
+            <ScrollToTop />
+            
             {activeScreen === "auth" && (
               <AuthScreen
                 theme={theme}

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogOut } from "lucide-react";
 
 interface SignOutButtonProps {
@@ -8,6 +9,17 @@ interface SignOutButtonProps {
 
 export default function SignOutButton({ onSignOut, className = "" }: SignOutButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    if (showConfirm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showConfirm]);
 
   return (
     <>
@@ -20,9 +32,9 @@ export default function SignOutButton({ onSignOut, className = "" }: SignOutButt
         <span className="hidden sm:inline text-[10px] sm:text-xs font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">Sign Out</span>
       </button>
 
-      {showConfirm && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+      {showConfirm && createPortal(
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden relative z-[9999]">
             <div className="p-6">
               <h3 className="text-xl font-bold text-white mb-2">Sign Out?</h3>
               <p className="text-sm text-slate-400 mb-6">
@@ -50,7 +62,8 @@ export default function SignOutButton({ onSignOut, className = "" }: SignOutButt
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

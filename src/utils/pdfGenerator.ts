@@ -120,7 +120,7 @@ export const generateDesignThinkingReport = async (
     columnStyles: { 0: { fontStyle: "bold", textColor: [71, 85, 105], cellWidth: 60 }, 1: { textColor: [15, 23, 42] } },
     body: [
       ["Project / Challenge Name", topic.title],
-      ["Challenge Category", topic.category],
+      ["Challenge Category", topic.trendingTag || "General"],
       ["Completion Date", completionDate],
       ["Overall Simulation Score", `${scores.overallScore}%`],
     ],
@@ -321,7 +321,7 @@ export const generateDesignThinkingReport = async (
   currentY += 15;
 
   // Achievements
-  if (userProfile?.unlockedBadges && userProfile.unlockedBadges.length > 0) {
+  if (userProfile?.unlockedBadgeIds && userProfile.unlockedBadgeIds.length > 0) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(30, 41, 59);
@@ -330,7 +330,7 @@ export const generateDesignThinkingReport = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(15, 23, 42);
-    const badgesString = userProfile.unlockedBadges.map(b => `🏆 ${b}`).join("   ");
+    const badgesString = userProfile.unlockedBadgeIds.map((b: string) => `🏆 ${b.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`).join("   ");
     const splitBadges = doc.splitTextToSize(badgesString, pageWidth - margin * 2);
     doc.text(splitBadges, margin, currentY);
     currentY += splitBadges.length * 6 + 9;

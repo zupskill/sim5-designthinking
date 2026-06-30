@@ -441,7 +441,7 @@ export default function LandingScreen({
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> DT INNOVATION LAB
             </motion.div>
 
-            <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-none mb-6">
+            <h2 className="font-extrabold tracking-tight text-white leading-none mb-6" style={{ fontSize: "clamp(2.25rem, 5vw, 3.75rem)" }}>
               Most people notice problems.<br />
               <span className="bg-gradient-to-r from-cyan-600 via-sky-500 to-indigo-650 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400 text-transparent bg-clip-text">
                 Let's learn how to solve them.
@@ -518,7 +518,7 @@ export default function LandingScreen({
       {/* DEMO MODAL */}
       {showDemoModal && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity duration-300">
-          <div className="glass-panel max-w-2xl w-full rounded-2xl glow-cyan overflow-hidden relative p-6 animate-in fade-in zoom-in-95 duration-200 text-left">
+          <div className="glass-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl glow-cyan relative p-6 animate-in fade-in zoom-in-95 duration-200 text-left">
             <button 
               onClick={() => setShowDemoModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"

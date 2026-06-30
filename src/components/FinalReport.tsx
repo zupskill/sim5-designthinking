@@ -176,7 +176,7 @@ export default function FinalReport({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8 text-left">
           
           {/* ACH LEVEL OUTCOME CARD */}
-          <div className={`md:col-span-7 min-w-[320px] ${cardBgClass}`}>
+          <div className={`md:col-span-7 ${cardBgClass}`}>
             <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl pointer-events-none ${isDark ? "bg-cyan-500/5" : "bg-cyan-500/3"}`} />
             
             <div>
@@ -203,7 +203,7 @@ export default function FinalReport({
           </div>
 
           {/* REDESIGNED RESULTS XP CARD */}
-          <div className={`md:col-span-5 min-w-[320px] ${cardBgClass}`}>
+          <div className={`md:col-span-5 ${cardBgClass}`}>
             <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl pointer-events-none ${isDark ? "bg-cyan-500/10" : "bg-cyan-500/3"}`} />
             
             <div className="space-y-4">

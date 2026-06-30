@@ -1281,7 +1281,7 @@ export default function App() {
       {/* CONFIRMATION DIALOG FOR FULL DEVELOPER RESET */}
       {showResetConfirm && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 z-55 pointer-events-auto animate-in fade-in duration-200">
-          <div className="max-w-sm w-full rounded-2xl overflow-hidden relative p-6 bg-slate-900 border border-red-500/30 text-left shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+          <div className="max-w-sm w-full max-h-[90vh] overflow-y-auto rounded-2xl relative p-6 bg-slate-900 border border-red-500/30 text-left shadow-[0_0_50px_rgba(239,68,68,0.2)]">
             <div className="flex items-center gap-3 mb-4 text-red-400">
               <ShieldAlert className="w-6 h-6 animate-pulse text-red-500 shrink-0" />
               <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono">
@@ -1415,7 +1415,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: -15 }}
               transition={{ delay: 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={`text-center space-y-4 max-w-md p-8 rounded-3xl relative overflow-hidden transition-all duration-300 ${
+              className={`text-center space-y-4 max-w-md p-8 rounded-3xl relative max-h-[90vh] overflow-y-auto overflow-x-hidden transition-all duration-300 ${
                 theme === "dark"
                   ? "bg-slate-900 border border-slate-800/80 shadow-2xl shadow-cyan-950/20 text-white"
                   : "bg-white border-2 border-slate-300 shadow-2xl shadow-slate-400/40 text-slate-900"

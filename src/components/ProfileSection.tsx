@@ -117,8 +117,8 @@ export default function ProfileSection({
   ]);
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 overflow-y-auto">
-      <div className="glass-panel max-w-2xl w-full rounded-2xl overflow-hidden relative p-8 border-slate-800 text-left bg-slate-950/95 shadow-2xl">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+      <div className="glass-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl relative p-8 border-slate-800 text-left bg-slate-950/95 shadow-2xl">
         
         {/* Close button */}
         <button

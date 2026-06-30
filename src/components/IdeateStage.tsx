@@ -769,7 +769,7 @@ export default function IdeateStage({
             )}
 
             {/* THREE ZONE COLUMNS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
               
               {/* NOW COLUMN */}
               <div className="flex flex-col bg-slate-950/15 border border-slate-900 p-4 rounded-3xl min-h-[460px]">
@@ -924,7 +924,7 @@ export default function IdeateStage({
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6"
           >
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-[0_10px_40px_rgba(6,182,212,0.15)] flex flex-col items-center">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto text-center shadow-[0_10px_40px_rgba(6,182,212,0.15)] flex flex-col items-center">
               <div className="relative mb-5 flex items-center justify-center">
                 <RefreshCw className="w-12 h-12 text-cyan-400 animate-spin absolute" />
                 <Lightbulb className="w-6 h-6 text-yellow-405 animate-pulse" />

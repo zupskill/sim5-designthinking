@@ -21,7 +21,7 @@ export default function RecapScreen({ recap, onNewStart, onReviewRecap, theme }:
         className="w-full max-w-4xl flex flex-col items-center gap-8"
       >
         <div className="text-center space-y-3">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+          <h1 className="font-black tracking-tight" style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>
             👋 Welcome Back!
           </h1>
           <p className={`text-lg md:text-xl font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>

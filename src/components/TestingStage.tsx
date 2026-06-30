@@ -383,7 +383,7 @@ export default function TestingStage({
       )}
 
       {/* THE 3 FEEDBACK SECTIONS - RENDERED INDEPENDENTLY WITH LOADING SKELETONS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
         {/* WHAT-IF PANEL */}
         <div className="flex flex-col">

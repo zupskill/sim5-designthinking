@@ -268,7 +268,7 @@ export default function TopicSelection({ onSelect, selectedTopic }: TopicSelecti
       {/* CUSTOM TOPIC MODAL */}
       {showCustomModal && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="glass-panel max-w-lg w-full rounded-2xl glow-purple overflow-hidden relative p-6 animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-2xl glow-purple relative p-6 animate-in fade-in zoom-in-95 duration-200">
             {/* Close button */}
             <button 
               onClick={() => setShowCustomModal(false)}

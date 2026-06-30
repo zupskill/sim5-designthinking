@@ -632,7 +632,7 @@ export default function PrototypeStage({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 max-h-[340px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 max-h-[340px] overflow-y-auto pr-1">
                       {storyboardScenes.map((scene, idx) => (
                         <div 
                           key={scene.id} 
@@ -868,7 +868,7 @@ export default function PrototypeStage({
       {/* SOLUTION COMMITMENT LIGHTWEIGHT CONFIRMATION MODAL */}
       {showConfirmModal && pendingSelectedIdea && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 to-indigo-500" />
             
             <div className="flex items-start gap-3 mb-4">

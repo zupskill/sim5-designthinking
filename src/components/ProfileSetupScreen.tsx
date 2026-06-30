@@ -97,8 +97,7 @@ export default function ProfileSetupScreen({
             ZS
           </div>
           <div>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-cyan-400 font-bold block leading-none">ZUPSKILL LAB</span>
-            <span className="text-sm font-bold tracking-tight text-white uppercase italic">FUTURE REDESIGN PORTAL</span>
+            <span className="text-sm font-bold tracking-tight text-white uppercase italic">DT INNOVATION PORTAL</span>
           </div>
         </div>
         

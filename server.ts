@@ -156,7 +156,7 @@ app.get(["/auth/callback", "/auth/callback/"], (req: Request, res: Response) => 
       <div class="container">
         <div class="spinner"></div>
         <h2>Setting up your coordinates</h2>
-        <p>Syncing OAuth keys with Future Redesign Lab...</p>
+        <p>Syncing OAuth keys with DT Innovation Lab...</p>
       </div>
       <script>
         const supabaseUrl = "${SUPABASE_URL}";
@@ -1148,7 +1148,7 @@ app.post("/api/perspectives", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "topicTitle and perspectiveName are required." });
     }
 
-    const prompt = `You are a friendly AI peer helper at ZupSkill's Future Redesign Lab.
+    const prompt = `You are a friendly AI peer helper at ZupSkill's DT Innovation Lab.
 The user is working on the challenge: "${topicTitle}" (${topicDescription || "Design different aspects"}).
 Please generate high-concept but deeply human, realistic, and touching details for the following person's perspective: "${perspectiveName}".
 We need to understand their daily struggles, frustrations, and feelings so we can think up cool ways to help them.
@@ -1649,7 +1649,7 @@ app.post("/api/ideas/enhance", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "ideaText, problemStatement, and category are required." });
     }
 
-    const prompt = `You are a friendly, highly creative design partner at ZupSkill's Future Redesign Lab.
+    const prompt = `You are a friendly, highly creative design partner at ZupSkill's DT Innovation Lab.
 Help expand and beef up this idea: "${ideaText}" which solves the problem: "${problemStatement}".
 This is categorized as a "${category}" concept.
 We want to keep its sweet original spirit but make it super exciting, fun, and easy for students to understand.
@@ -2010,7 +2010,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Future Redesign Lab Server] Running on http://localhost:${PORT}`);
+    console.log(`[DT Innovation Lab Server] Running on http://localhost:${PORT}`);
   });
 }
 

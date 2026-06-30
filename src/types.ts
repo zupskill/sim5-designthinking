@@ -75,6 +75,19 @@ export interface Badge {
   unlocked: boolean;
 }
 
+export interface CompletedSimulationRecap {
+  simulationName: string;
+  completionDate: string;
+  challenge: string;
+  empathizeSummary: string;
+  problemStatement: string;
+  topIdeas: string[];
+  prototypeSummary: string;
+  achievements: string[];
+  overallScore: number;
+  completionTime: number;
+}
+
 export interface UserProfile {
   uid?: string;
   username: string;
@@ -96,6 +109,7 @@ export interface UserProfile {
   gender?: string;
   city?: string;
   yearOfBirth?: string;
+  lastCompletedSimulation?: CompletedSimulationRecap;
 }
 
 export interface CommunitySubmission {

@@ -28,8 +28,7 @@ export default function AuthScreen({
             ZS
           </div>
           <div>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-cyan-400 font-bold block leading-none">ZUPSKILL LAB</span>
-            <h1 className="text-lg font-bold tracking-tight text-white uppercase italic">FUTURE REDESIGN LAB</h1>
+            <h1 className="text-lg font-bold tracking-tight text-white uppercase italic">DT INNOVATION LAB</h1>
           </div>
         </div>
         
@@ -54,7 +53,7 @@ export default function AuthScreen({
               <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> GATEWAY PORTAL
             </span>
             <h2 id="auth-title" className="text-3xl font-black text-white leading-tight mb-3">
-              Future Redesign Lab 🚀
+              DT Innovation Lab 🚀
             </h2>
             <p className="text-slate-405 text-sm font-medium leading-relaxed max-w-sm mx-auto">
               Learn how to solve real-world problems, earn achievements, and build your innovation portfolio.

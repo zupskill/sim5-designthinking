@@ -17,6 +17,7 @@ import IdeateStage from "./components/IdeateStage";
 import PrototypeStage from "./components/PrototypeStage";
 import TestingStage from "./components/TestingStage";
 import FinalReport from "./components/FinalReport";
+import RecapScreen from "./components/RecapScreen";
 import ProfileSection from "./components/ProfileSection";
 import ThemeToggle from "./components/ThemeToggle";
 import StageGuidance from "./components/StageGuidance";
@@ -56,7 +57,7 @@ export default function App() {
   };
 
   // Navigation State: 'auth' | 'onboarding' | 'landing' | 'intro' | 'simulation' | 'community' | 'report'
-  const [activeScreen, setActiveScreen] = useState<"auth" | "onboarding" | "landing" | "intro" | "simulation" | "community" | "report">(() => {
+  const [activeScreen, setActiveScreen] = useState<"auth" | "onboarding" | "landing" | "intro" | "simulation" | "community" | "report" | "recap">(() => {
     const saved = localStorage.getItem("zupskill_sim_active_screen");
     return (saved as any) || "auth";
   });
@@ -72,18 +73,18 @@ export default function App() {
   });
 
   useEffect(() => {
-    let title = "Future Redesign Lab | Zupskill";
+    let title = "DT Innovation Lab | Zupskill";
     if (activeScreen === "simulation") {
       switch (currentStage) {
-        case 1: title = "Future Redesign Lab | Choose a Topic"; break;
-        case 2: title = "Future Redesign Lab | Empathize"; break;
-        case 3: title = "Future Redesign Lab | Define"; break;
-        case 4: title = "Future Redesign Lab | Ideate"; break;
-        case 5: title = "Future Redesign Lab | Prototype"; break;
-        case 6: title = "Future Redesign Lab | Test"; break;
+        case 1: title = "DT Innovation Lab | Choose a Topic"; break;
+        case 2: title = "DT Innovation Lab | Empathize"; break;
+        case 3: title = "DT Innovation Lab | Define"; break;
+        case 4: title = "DT Innovation Lab | Ideate"; break;
+        case 5: title = "DT Innovation Lab | Prototype"; break;
+        case 6: title = "DT Innovation Lab | Test"; break;
       }
     } else if (activeScreen === "report") {
-      title = "Future Redesign Lab | Journey Complete";
+      title = "DT Innovation Lab | Journey Complete";
     }
     document.title = title;
   }, [activeScreen, currentStage]);
@@ -482,7 +483,11 @@ export default function App() {
         }
       } else {
         if (activeScreen === "auth" || activeScreen === "onboarding") {
-          setActiveScreen("landing");
+          if (profile.lastCompletedSimulation) {
+            setActiveScreen("recap");
+          } else {
+            setActiveScreen("landing");
+          }
         }
       }
     }
@@ -949,7 +954,7 @@ export default function App() {
             ZS
           </div>
           <h2 className="text-sm font-black text-white font-mono uppercase tracking-[0.25em]">Syncing Neural Coordinates</h2>
-          <span className="text-[10px] uppercase font-bold text-slate-500">Connecting to Future Redesign Network...</span>
+          <span className="text-[10px] uppercase font-bold text-slate-500">Connecting to DT Innovation Network...</span>
         </div>
       </div>
     );
@@ -967,10 +972,7 @@ export default function App() {
             </div>
             <div className="flex flex-col">
               <span className="text-xs font-black tracking-[0.12em] text-white uppercase font-sans leading-none">
-                FUTURE REDESIGN LAB
-              </span>
-              <span className="text-[10px] font-mono tracking-[0.05em] text-slate-400 mt-1 leading-none">
-                Powered by ZupSkill
+                DT INNOVATION LAB
               </span>
             </div>
           </div>
@@ -1042,6 +1044,20 @@ export default function App() {
                 username={profile?.username || "Innovator"}
                 email={user?.email || ""}
                 onSignOut={handleSignOut}
+              />
+            )}
+
+            {activeScreen === "recap" && profile.lastCompletedSimulation && (
+              <RecapScreen
+                recap={profile.lastCompletedSimulation}
+                theme={theme}
+                onNewStart={() => {
+                  handleResetSim();
+                  triggerTransition("intro");
+                }}
+                onReviewRecap={() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                }}
               />
             )}
 
@@ -1204,6 +1220,41 @@ export default function App() {
                       onAddXP={handleAddXP}
                       onUnlockBadge={handleUnlockBadge}
                       onNext={() => {
+                        // Compute Recap
+                        const savedTesting = localStorage.getItem(`zupskill_testing_${selectedTopic.id}`);
+                        let creativity = 75, understanding = 80, innovation = 70;
+                        if (savedTesting) {
+                          try {
+                            const parsed = JSON.parse(savedTesting);
+                            if (parsed.iWishScore != null) creativity = parsed.iWishScore;
+                            if (parsed.iLikeScore != null) understanding = parsed.iLikeScore;
+                            if (parsed.whatIfScore != null) innovation = parsed.whatIfScore;
+                          } catch(e) {}
+                        }
+                        const overallScore = Math.round((creativity + understanding + innovation) / 3);
+
+                        let title = "Explorer";
+                        if (overallScore >= 91) title = "DT Innovation Master";
+                        else if (overallScore >= 76) title = "Innovation Builder";
+                        else if (overallScore >= 61) title = "Creative Thinker";
+                        else if (overallScore >= 41) title = "Problem Solver";
+
+                        const topIdeas = ideas.slice(0, 3).map(i => i.text);
+                        const recap = {
+                          simulationName: "DT Innovation Lab",
+                          completionDate: new Date().toLocaleDateString(),
+                          challenge: selectedTopic.title,
+                          empathizeSummary: problemObservations.length > 0 ? problemObservations[0].text : "",
+                          problemStatement: refinedHowMightWe,
+                          topIdeas: topIdeas,
+                          prototypeSummary: selectedPrototype.description,
+                          achievements: [title],
+                          overallScore: overallScore,
+                          completionTime: Date.now()
+                        };
+
+                        setProfile(prev => ({ ...prev, lastCompletedSimulation: recap }));
+
                         triggerTransition("report", undefined, "Testing complete. Let's inspect final scores! 🧪");
                       }}
                     />

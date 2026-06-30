@@ -1,6 +1,6 @@
 /**
  * Client-side Content Moderation & Spam Detection Service
- * Design Thinking Simulation - Future Redesign Lab
+ * Design Thinking Simulation - DT Innovation Lab
  */
 
 // Simple dictionary of common inappropriate words (Level 1 / Level 2 indicators)

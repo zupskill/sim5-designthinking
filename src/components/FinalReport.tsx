@@ -88,11 +88,11 @@ export default function FinalReport({
     
     if (avgScore >= 91) {
       return {
-        title: "Future Redesign Master",
+        title: "DT Innovation Master",
         symbol: "👑",
         desc: "Exceptional! You demonstrated master-level systemic design thinking. Your prototype showcases phenomenal user empathy, unique and highly creative novelty, and real-world scalability.",
         strengthScores: scores,
-        tierName: "Future Redesign Master",
+        tierName: "DT Innovation Master",
         colorClass: "bg-cyan-950/40 border border-cyan-500/20 text-cyan-300"
       };
     }

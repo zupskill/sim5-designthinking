@@ -178,8 +178,7 @@ export default function LandingScreen({
             ZS
           </div>
           <div>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-cyan-400 font-bold block leading-none">ZUPSKILL LAB</span>
-            <h1 className="text-lg font-bold tracking-tight text-white uppercase italic">FUTURE REDESIGN LAB</h1>
+            <h1 className="text-lg font-bold tracking-tight text-white uppercase italic">DT INNOVATION LAB</h1>
           </div>
         </div>
         
@@ -439,7 +438,7 @@ export default function LandingScreen({
               }}
               className="inline-flex items-center gap-2 px-3 py-1 border rounded-full text-cyan-400 text-xs font-semibold mb-6 uppercase tracking-wider select-none cursor-default backdrop-blur-sm"
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> FUTURE REDESIGN LAB
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> DT INNOVATION LAB
             </motion.div>
 
             <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-none mb-6">
@@ -450,7 +449,7 @@ export default function LandingScreen({
             </h2>
 
             <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-              Welcome to the <span className="text-white font-medium">Future Redesign Lab 👀</span>. 
+              Welcome to the <span className="text-white font-medium">DT Innovation Lab 👀</span>. 
               Unleash your creativity, solve real-world struggles with friendly AI assistance, and level up your problem-solving game today!
             </p>
 

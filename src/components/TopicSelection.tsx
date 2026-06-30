@@ -81,7 +81,7 @@ export default function TopicSelection({ onSelect, selectedTopic }: TopicSelecti
     setErrorMsg("");
     setIsGenerating(true);
 
-    // Simulate short analysis of custom topic via "Future Redesign Lab Engine"
+    // Simulate short analysis of custom topic via "DT Innovation Lab Engine"
     setTimeout(() => {
       const customTopic: Topic = {
         id: `custom_${Date.now()}`,

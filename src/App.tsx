@@ -1098,6 +1098,7 @@ export default function App() {
                 prototype={selectedPrototype!}
                 userProfile={profile}
                 onRestart={handleResetSim}
+                onBackToDashboard={() => setActiveScreen(profile.lastCompletedSimulation ? "recap" : "landing")}
                 theme={theme}
               />
             )}

@@ -11,6 +11,7 @@ interface FinalReportProps {
   prototype: PrototypeData | null;
   userProfile: UserProfile;
   onRestart: () => void;
+  onBackToDashboard: () => void;
   theme: "dark" | "light";
 }
 
@@ -20,6 +21,7 @@ export default function FinalReport({
   prototype,
   userProfile,
   onRestart,
+  onBackToDashboard,
   theme
 }: FinalReportProps) {
   
@@ -458,10 +460,13 @@ export default function FinalReport({
         {/* REBALANCED CTA FIELD BUTTONS */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
           <button
-            onClick={() => window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer")}
+            onClick={async () => {
+              const { generateDesignThinkingReport } = await import("../utils/pdfGenerator");
+              await generateDesignThinkingReport(topic, refinedProblem, prototype, scores, userProfile);
+            }}
             className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-[11px] font-extrabold uppercase tracking-widest rounded-full transition-all duration-300 transform hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(6,182,212,0.3)] hover:shadow-[0_6px_20px_rgba(6,182,212,0.45)]"
           >
-            Open ZupSkill Community 🚀
+            📄 Download Design Thinking Report
           </button>
 
           <button
@@ -472,7 +477,18 @@ export default function FinalReport({
                 : "bg-amber-100 hover:bg-amber-200 border border-amber-350 hover:border-amber-450 text-amber-800"
             }`}
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Try Another Challenge
+            🔄 Start New Simulation
+          </button>
+          
+          <button
+            onClick={onBackToDashboard}
+            className={`w-full sm:w-auto px-6 py-3.5 text-[11px] font-extrabold uppercase tracking-widest rounded-full transition-all duration-300 transform hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer ${
+              isDark 
+                ? "bg-slate-800/50 hover:bg-slate-700/80 border border-slate-700 hover:border-slate-500 text-slate-300" 
+                : "bg-slate-100 hover:bg-slate-200 border border-slate-300 hover:border-slate-400 text-slate-700"
+            }`}
+          >
+            🏠 Back to Dashboard
           </button>
         </div>
 

@@ -42,7 +42,7 @@ import {
 } from "./supabase";
 
 // Lucide icon imports for general App use
-import { Award, Compass, Eye, ShieldAlert, Zap, PenTool, Flame, User, MessageSquare, Users, RotateCcw, RefreshCw, Sparkles, Play } from "lucide-react";
+import { Award, Compass, Eye, ShieldAlert, Zap, PenTool, Flame, User, MessageSquare, Users, RotateCcw, RefreshCw, Sparkles, Play, MoreVertical } from "lucide-react";
 
 export default function App() {
   // Theme state: default is 'dark'
@@ -301,6 +301,7 @@ export default function App() {
           
           // Get local fallback
           let localFallback: UserProfile | null = null;
+          let savedRecap = null;
           try {
             const savedLocal = localStorage.getItem("zupskill_sim_profile");
             if (savedLocal) {
@@ -309,16 +310,22 @@ export default function App() {
                 localFallback = parsed;
               }
             }
+            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
+            if (recapLocal) savedRecap = JSON.parse(recapLocal);
           } catch (e) {}
 
           const cloudProfile = await getSupabaseProfile(session.user.id);
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false
+              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
+              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
-            setProfile(localFallback);
+            setProfile({
+              ...localFallback,
+              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
+            });
           } else {
             // Initiate partial onboarding profile state
             setProfile({
@@ -358,6 +365,7 @@ export default function App() {
         
         // Get local fallback
         let localFallback: UserProfile | null = null;
+        let savedRecap = null;
         try {
           const savedLocal = localStorage.getItem("zupskill_sim_profile");
           if (savedLocal) {
@@ -366,6 +374,8 @@ export default function App() {
               localFallback = parsed;
             }
           }
+          const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
+          if (recapLocal) savedRecap = JSON.parse(recapLocal);
         } catch (e) {}
 
         try {
@@ -373,10 +383,14 @@ export default function App() {
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false
+              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
+              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
-            setProfile(localFallback);
+            setProfile({
+              ...localFallback,
+              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
+            });
           } else {
             setProfile({
               uid: session.user.id,
@@ -435,22 +449,29 @@ export default function App() {
           localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
           
           let localFallback: UserProfile | null = null;
+          let savedRecap = null;
           try {
             const savedLocal = localStorage.getItem("zupskill_sim_profile");
             if (savedLocal) {
               const parsed = JSON.parse(savedLocal);
               if (parsed && parsed.uid === session.user.id) localFallback = parsed;
             }
+            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
+            if (recapLocal) savedRecap = JSON.parse(recapLocal);
           } catch (e) {}
 
           const cloudProfile = await getSupabaseProfile(session.user.id);
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false
+              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
+              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
-            setProfile(localFallback);
+            setProfile({
+              ...localFallback,
+              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
+            });
           } else {
             setProfile({
               uid: session.user.id,
@@ -494,15 +515,21 @@ export default function App() {
         }
       } else {
         if (activeScreen === "auth" || activeScreen === "onboarding") {
+          console.log("Profile loaded:", profile);
+          console.log("lastCompletedSimulation found:", !!profile.lastCompletedSimulation);
+          console.log("activeScreen before routing:", activeScreen);
+          
           if (profile.lastCompletedSimulation) {
             setActiveScreen("recap");
+            console.log("activeScreen after routing: recap");
           } else {
             setActiveScreen("landing");
+            console.log("activeScreen after routing: landing");
           }
         }
       }
     }
-  }, [user, loadingAuth, profile.isOnboarded, activeScreen]);
+  }, [user, loadingAuth, profile.isOnboarded, activeScreen, profile.lastCompletedSimulation]);
 
   // Save profile updates automatically to Supabase (Debounced)
   useEffect(() => {
@@ -717,6 +744,7 @@ export default function App() {
 
   // Temporary developer reset confirm dialog state
   const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
+  const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
 
   // XP Level mapping evaluator
   const calculateLevel = (xp: number): UserProfile["level"] => {
@@ -881,7 +909,7 @@ export default function App() {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("zupskill_sim_") && key !== "zupskill_sim_profile" && key !== "zupskill_sim_submissions" && key !== "zupskill_sim_saved_submissions") {
+      if (key && key.startsWith("zupskill_sim_") && key !== "zupskill_sim_profile" && key !== "zupskill_sim_submissions" && key !== "zupskill_sim_saved_submissions" && !key.startsWith("zupskill_sim_recap_")) {
         keysToRemove.push(key);
       }
       if (key && (key.startsWith("zupskill_perspectives_") || key.startsWith("zupskill_selected_perspective_") || key.startsWith("zupskill_define_") || key.startsWith("zupskill_prototype_") || key.startsWith("zupskill_testing_"))) {
@@ -989,32 +1017,34 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
-            {/* Temporary Developer Reset Button */}
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              title="Developer Tool: Reset entire simulation progress and return to Topic Selection"
-              className="px-1.5 py-1.5 sm:px-2.5 rounded-lg border border-red-900/35 bg-red-950/20 hover:bg-red-950/45 text-red-400 hover:text-red-300 hover:border-red-500/50 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all duration-200"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-red-500 animate-pulse shrink-0" />
-              <span className="hidden sm:inline">🔄 Reset</span>
-            </button>
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex items-center gap-4">
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                title="Developer Tool: Reset entire simulation progress and return to Topic Selection"
+                className="px-2.5 py-1.5 rounded-lg border border-red-900/35 bg-red-950/20 hover:bg-red-950/45 text-red-400 hover:text-red-300 hover:border-red-500/50 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all duration-200"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-red-500 animate-pulse shrink-0" />
+                <span>🔄 Reset</span>
+              </button>
+
+              <button
+                onClick={() => window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer")}
+                className="text-xs uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-slate-400 hover:text-white"
+                title="Community"
+              >
+                <Users className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span>Community</span>
+              </button>
+            </div>
 
             {/* Smooth Theme Switching Toggler */}
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
-            <button
-              onClick={() => window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer")}
-              className="text-xs uppercase font-bold tracking-wider px-1.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-slate-400 hover:text-white"
-              title="Community"
-            >
-              <Users className="w-4 h-4 text-cyan-400 shrink-0" />
-              <span className="hidden sm:inline">Community</span>
-            </button>
-
             {/* Profile controller pill button */}
             <button
               onClick={() => setShowProfileModal(true)}
-              className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl px-2 sm:px-4 py-1.5 flex items-center gap-3 text-left transition-all hover:border-cyan-500/20 cursor-pointer shrink-0"
+              className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl px-2 sm:px-4 py-1.5 flex items-center gap-2 sm:gap-3 text-left transition-all hover:border-cyan-500/20 cursor-pointer shrink-0"
             >
               <div className="w-6 h-6 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border border-cyan-400/30 shrink-0">
                 <User className="w-3.5 h-3.5" />
@@ -1025,6 +1055,45 @@ export default function App() {
                 <span className="text-[10px] text-cyan-400 leading-none">{profile.xp} XP • {profile.level}</span>
               </div>
             </button>
+
+            {/* Mobile More Menu Toggle */}
+            <div className="relative sm:hidden ml-0.5">
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center shrink-0"
+                aria-label="More Options"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              
+              {showMobileMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)}></div>
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col py-1">
+                    <button
+                      onClick={() => {
+                        setShowMobileMenu(false);
+                        window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer");
+                      }}
+                      className="px-4 py-3 flex items-center gap-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors text-left"
+                    >
+                      <Users className="w-4 h-4 text-cyan-400" />
+                      Community
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowMobileMenu(false);
+                        setShowResetConfirm(true);
+                      }}
+                      className="px-4 py-3 flex items-center gap-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300 transition-colors text-left border-t border-slate-800/50"
+                    >
+                      <RotateCcw className="w-4 h-4 text-red-500" />
+                      Reset Progress
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
       )}
@@ -1270,6 +1339,9 @@ export default function App() {
                         };
 
                         setProfile(prev => ({ ...prev, lastCompletedSimulation: recap }));
+                        if (user) {
+                          localStorage.setItem(`zupskill_sim_recap_${user.id}`, JSON.stringify(recap));
+                        }
 
                         triggerTransition("report", undefined, "Testing complete. Let's inspect final scores! 🧪");
                       }}

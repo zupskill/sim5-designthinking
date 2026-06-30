@@ -96,8 +96,8 @@ export function StageIntroModal({ isOpen, stageConfig, onContinue, onClose }: St
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-4 pt-20 sm:pt-4 bg-slate-950/80 backdrop-blur-sm transition-opacity">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-[95%] sm:w-full max-w-[420px] sm:max-w-3xl max-h-[90vh] shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center px-4 pt-[68px] pb-4 sm:p-4 bg-slate-950/80 backdrop-blur-sm transition-opacity">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-[95%] sm:w-full max-w-[420px] sm:max-w-3xl max-h-[calc(100vh-84px)] sm:max-h-[90vh] shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col relative overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-slate-800 flex flex-col items-center text-center relative shrink-0">
           <button 

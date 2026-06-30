@@ -90,26 +90,20 @@ export interface CompletedSimulationRecap {
 
 export interface UserProfile {
   uid?: string;
-  username: string;
+  username: string; // Used as displayName
   email?: string;
   photoURL?: string;
-  college: string;
-  degree?: string;
-  yearOfStudy?: string;
-  primaryInterest?: string;
-  careerGoal?: string;
   level: "Explorer" | "Observer" | "Problem Finder" | "Innovator" | "Visionary" | "System Thinker";
   xp: number;
   unlockedBadgeIds: string[];
   problemsSolved: number;
   ideasGenerated: number;
   prototypesBuilt: number;
-  isOnboarded?: boolean;
-  phone?: string;
-  gender?: string;
-  city?: string;
-  yearOfBirth?: string;
+  completedSimulations?: number;
   lastCompletedSimulation?: CompletedSimulationRecap;
+  joinedAt?: string;
+  // Kept as optional to not break any accidental loose references
+  college?: string;
 }
 
 export interface CommunitySubmission {

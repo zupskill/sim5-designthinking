@@ -68,9 +68,11 @@ export default function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
-  // Navigation State: 'auth' | 'onboarding' | 'landing' | 'intro' | 'simulation' | 'community' | 'report'
-  const [activeScreen, setActiveScreen] = useState<"auth" | "onboarding" | "landing" | "intro" | "simulation" | "community" | "report" | "recap">(() => {
+  // Navigation State: 'auth' | 'landing' | 'intro' | 'simulation' | 'community' | 'report' | 'recap'
+  const [activeScreen, setActiveScreen] = useState<"auth" | "landing" | "intro" | "simulation" | "community" | "report" | "recap">(() => {
     const saved = localStorage.getItem("zupskill_sim_active_screen");
+    // Default fallback to 'auth' if onboarding was saved
+    if (saved === "onboarding") return "auth";
     return (saved as any) || "auth";
   });
   
@@ -319,30 +321,36 @@ export default function App() {
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
+              username: cloudProfile.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
+              email: session.user.email || "",
+              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
               lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
             setProfile({
               ...localFallback,
+              username: localFallback.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
+              email: session.user.email || "",
+              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
               lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
             });
           } else {
-            // Initiate partial onboarding profile state
-            setProfile({
+            // New user direct onboarding
+            const newProfile: UserProfile = {
               uid: session.user.id,
               username: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
               email: session.user.email || "",
               photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              college: "",
               level: "Explorer",
               xp: 60,
               unlockedBadgeIds: ["problem-hunter"],
               problemsSolved: 0,
               ideasGenerated: 0,
               prototypesBuilt: 0,
-              isOnboarded: false
-            });
+            };
+            setProfile(newProfile);
+            // Optionally, save to Supabase immediately for new users
+            await saveSupabaseProfile(session.user.id, newProfile);
           }
         } else {
           setUser(null);
@@ -510,27 +518,21 @@ export default function App() {
         setActiveScreen("auth");
       }
     } else {
-      if (!profile.isOnboarded) {
-        if (activeScreen !== "onboarding") {
-          setActiveScreen("onboarding");
-        }
-      } else {
-        if (activeScreen === "auth" || activeScreen === "onboarding") {
-          console.log("Profile loaded:", profile);
-          console.log("lastCompletedSimulation found:", !!profile.lastCompletedSimulation);
-          console.log("activeScreen before routing:", activeScreen);
-          
-          if (profile.lastCompletedSimulation) {
-            setActiveScreen("recap");
-            console.log("activeScreen after routing: recap");
-          } else {
-            setActiveScreen("landing");
-            console.log("activeScreen after routing: landing");
-          }
+      if (activeScreen === "auth") {
+        console.log("Profile loaded:", profile);
+        console.log("lastCompletedSimulation found:", !!profile.lastCompletedSimulation);
+        console.log("activeScreen before routing:", activeScreen);
+        
+        if (profile.lastCompletedSimulation) {
+          setActiveScreen("recap");
+          console.log("activeScreen after routing: recap");
+        } else {
+          setActiveScreen("landing");
+          console.log("activeScreen after routing: landing");
         }
       }
     }
-  }, [user, loadingAuth, profile.isOnboarded, activeScreen, profile.lastCompletedSimulation]);
+  }, [user, loadingAuth, activeScreen, profile.lastCompletedSimulation]);
 
   // Save profile updates automatically to Supabase (Debounced)
   useEffect(() => {
@@ -627,14 +629,12 @@ export default function App() {
     setProfile({
       uid: "",
       username: "Innovator",
-      college: "",
       level: "Explorer",
       xp: 0,
       unlockedBadgeIds: [],
       problemsSolved: 0,
       ideasGenerated: 0,
       prototypesBuilt: 0,
-      isOnboarded: false
     });
     
     // Return the user to the authentication screen
@@ -1051,9 +1051,13 @@ export default function App() {
               onClick={() => setShowProfileModal(true)}
               className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl px-2 sm:px-4 py-1.5 flex items-center gap-2 sm:gap-3 text-left transition-all hover:border-cyan-500/20 cursor-pointer shrink-0"
             >
-              <div className="w-6 h-6 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border border-cyan-400/30 shrink-0">
-                <User className="w-3.5 h-3.5" />
-              </div>
+              {profile.photoURL ? (
+                <img src={profile.photoURL} alt={profile.username} className="w-6 h-6 rounded-full border border-cyan-400/30 object-cover shrink-0" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border border-cyan-400/30 shrink-0">
+                  <User className="w-3.5 h-3.5" />
+                </div>
+              )}
 
               <div className="hidden sm:block">
                 <span className="text-[10px] font-mono font-bold block text-slate-400 leading-none truncate max-w-[80px]">{profile.username}</span>
@@ -1124,17 +1128,6 @@ export default function App() {
                 theme={theme}
                 onToggleTheme={toggleTheme}
                 onSignInWithGoogle={handleSignInWithGoogle}
-              />
-            )}
-
-            {activeScreen === "onboarding" && (
-              <ProfileSetupScreen
-                theme={theme}
-                onToggleTheme={toggleTheme}
-                onSaveOnboarding={handleSaveOnboarding}
-                username={profile?.username || "Innovator"}
-                email={user?.email || ""}
-                onSignOut={handleSignOut}
               />
             )}
 

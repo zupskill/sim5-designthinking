@@ -29,19 +29,6 @@ export default function ProfileSection({
 }: ProfileSectionProps) {
   const [activeTab, setActiveTab] = useState<"details" | "achievements">("details");
 
-  // Input states filled with existing profile fields
-  const [fullName, setFullName] = useState(profile.username || "");
-  const [emailVal, setEmailVal] = useState(profile.email || "");
-  const [phoneVal, setPhoneVal] = useState(profile.phone || "");
-  const [genderVal, setGenderVal] = useState(profile.gender || "");
-  const [cityVal, setCityVal] = useState(profile.city || "");
-  const [yearOfBirthVal, setYearOfBirthVal] = useState(profile.yearOfBirth || "");
-  const [collegeVal, setCollegeVal] = useState(profile.college || "");
-  const [branchVal, setBranchVal] = useState(profile.degree || "");
-  const [yearOfGraduationVal, setYearOfGraduationVal] = useState(profile.yearOfStudy || "");
-
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-
   const XP_LEVEL_TARGETS: Record<string, number> = {
     "Explorer": 150,
     "Observer": 350,
@@ -53,68 +40,6 @@ export default function ProfileSection({
 
   const currentLevelTarget = XP_LEVEL_TARGETS[profile.level] || 1000;
   const progressRatio = Math.min((profile.xp / currentLevelTarget) * 100, 100);
-
-  // Auto-save logic triggers after 800ms debounce of any input changes
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      // Check if anything actually changed from current profile values
-      if (
-        fullName === profile.username &&
-        emailVal === profile.email &&
-        phoneVal === (profile.phone || "") &&
-        genderVal === (profile.gender || "") &&
-        cityVal === (profile.city || "") &&
-        yearOfBirthVal === (profile.yearOfBirth || "") &&
-        collegeVal === profile.college &&
-        branchVal === (profile.degree || "") &&
-        yearOfGraduationVal === (profile.yearOfStudy || "")
-      ) {
-        return;
-      }
-
-      setSaveStatus("saving");
-      
-      const newProfile: UserProfile = {
-        ...profile,
-        username: fullName,
-        email: emailVal,
-        phone: phoneVal,
-        gender: genderVal,
-        city: cityVal,
-        yearOfBirth: yearOfBirthVal,
-        college: collegeVal,
-        degree: branchVal,
-        yearOfStudy: yearOfGraduationVal
-      };
-
-      setProfile(newProfile);
-
-      if (profile.uid) {
-        const success = await saveSupabaseProfile(profile.uid, newProfile);
-        if (success) {
-          setSaveStatus("saved");
-          setTimeout(() => setSaveStatus("idle"), 2500);
-        } else {
-          setSaveStatus("idle");
-        }
-      } else {
-         setSaveStatus("saved");
-         setTimeout(() => setSaveStatus("idle"), 2500);
-      }
-    }, 800);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [
-    fullName,
-    emailVal,
-    phoneVal,
-    genderVal,
-    cityVal,
-    yearOfBirthVal,
-    collegeVal,
-    branchVal,
-    yearOfGraduationVal
-  ]);
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
@@ -157,164 +82,51 @@ export default function ProfileSection({
 
         {/* TAB 1: DETAILS EDIT FORM */}
         {activeTab === "details" && (
-          <div>
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div>
-                <p className="text-xs text-slate-400">
-                  Auto-saves to your account in real time.
-                </p>
-              </div>
-              <div>
-                {saveStatus === "saving" && (
-                  <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full flex items-center gap-1.5 font-bold font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                    AUTO-SAVING...
-                  </span>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
+              <div className="relative">
+                {profile.photoURL ? (
+                  <img src={profile.photoURL} alt={profile.username} className="w-24 h-24 rounded-full border-2 border-cyan-400/30 object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-cyan-400/10 text-cyan-400 flex items-center justify-center border-2 border-cyan-400/30">
+                    <User className="w-10 h-10" />
+                  </div>
                 )}
-                {saveStatus === "saved" && (
-                  <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full flex items-center gap-1.5 font-bold font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                    ALL CHANGES SAVED
-                  </span>
-                )}
+                <div className="absolute -bottom-2 -right-2 bg-slate-900 border border-slate-700 p-1.5 rounded-full shadow-lg">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                </div>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-2xl font-bold text-white mb-1">{profile.username}</h3>
+                <p className="text-slate-400 mb-4">{profile.email}</p>
+                <div className="inline-block bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-widest uppercase border border-cyan-500/20">
+                  {profile.level}
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Naveed Ahamed"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-center">
+                <div className="text-3xl font-bold text-cyan-400 mb-1">{profile.xp}</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Total XP</div>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={emailVal}
-                  onChange={(e) => setEmailVal(e.target.value)}
-                  placeholder="e.g. name@domain.com"
-                  className="w-full bg-[#0b0f19] border border-slate-850 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
+              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-center">
+                <div className="text-3xl font-bold text-white mb-1">{profile.completedSimulations || 0}</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Simulations</div>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-center">
+                <div className="text-3xl font-bold text-white mb-1">{profile.problemsSolved}</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Problems</div>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-center">
+                <div className="text-3xl font-bold text-white mb-1">{profile.unlockedBadgeIds.length}</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Badges</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phoneVal}
-                  onChange={(e) => setPhoneVal(e.target.value)}
-                  placeholder="e.g. 5550212354"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Gender
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={genderVal}
-                  onChange={(e) => setGenderVal(e.target.value)}
-                  placeholder="e.g. Male / Female"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  City
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={cityVal}
-                  onChange={(e) => setCityVal(e.target.value)}
-                  placeholder="e.g. Seattle"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Year of Birth
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={yearOfBirthVal}
-                  onChange={(e) => setYearOfBirthVal(e.target.value)}
-                  placeholder="e.g. 2004"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-110 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  College
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={collegeVal}
-                  onChange={(e) => setCollegeVal(e.target.value)}
-                  placeholder="e.g. State University"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Branch
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={branchVal}
-                  onChange={(e) => setBranchVal(e.target.value)}
-                  placeholder="e.g. Computer Science"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-350 mb-1.5">
-                  Year of Graduation
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={yearOfGraduationVal}
-                  onChange={(e) => setYearOfGraduationVal(e.target.value)}
-                  placeholder="e.g. 2026"
-                  className="w-full bg-[#0b0f19] border border-slate-800 focus:border-cyan-505/50 text-slate-100 text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
+            <p className="text-xs text-center text-slate-500 font-medium">
+              Your account information is securely provided by your Google account.
+            </p>
           </div>
         )}
 

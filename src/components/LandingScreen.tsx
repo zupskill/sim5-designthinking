@@ -514,53 +514,67 @@ export default function LandingScreen({
 
       {/* DEMO MODAL */}
       {showDemoModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity duration-300">
-          <div className="glass-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl glow-cyan relative p-6 animate-in fade-in zoom-in-95 duration-200 text-left">
-            <button 
-              onClick={() => setShowDemoModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-4">
-              <Brain className="w-6 h-6 text-cyan-400 animate-pulse" />
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono"> red-lab demo blueprint</h3>
+        <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center px-4 pt-[68px] pb-4 sm:p-4 bg-slate-950/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-[95%] sm:w-full max-w-[420px] sm:max-w-3xl max-h-[calc(100vh-84px)] sm:max-h-[90vh] shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col relative overflow-hidden">
+            {/* Header */}
+            <div className="p-4 sm:p-6 border-b border-slate-800 flex flex-col items-center text-center relative shrink-0">
+              <button 
+                onClick={() => setShowDemoModal(false)}
+                className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-2 text-indigo-400 font-semibold uppercase tracking-wider text-xs sm:text-sm mb-1 sm:mb-2">
+                <span>🎬</span> Demo
+              </div>
+              <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">DT Innovation Lab Demo</h2>
+              <p className="text-xs sm:text-sm text-slate-400 hidden sm:block">Watch this short demo to understand how the DT Innovation Lab works before starting your Design Thinking journey.</p>
             </div>
 
-            <div className="space-y-4 text-sm text-slate-300">
-              <p>
-                Welcome, Innovator. Below is the tactical flightplan of your 6-stage redesign simulation. 
-                You will not be answering boring questions. You will actively pilot the process:
-              </p>
+            {/* Video Container */}
+            <div className="w-full aspect-video bg-black relative shrink-0">
+              <iframe
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="DT Innovation Lab Demo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full border-0"
+              ></iframe>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                <div className="p-3 bg-slate-905/60 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-cyan-400 font-bold block uppercase tracking-wider mb-1">01. EMPATHIZE</span>
-                  Explore live micro-environments and click characters to unlock hidden emotional frustrations.
-                </div>
-                <div className="p-3 bg-slate-905/60 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-purple-400 font-bold block uppercase tracking-wider mb-1">02. DEFINE</span>
-                  Zoom into real pain points to engineer clean, human-centered "How Might We..." statements.
-                </div>
-                <div className="p-3 bg-slate-905/60 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-orange-400 font-bold block uppercase tracking-wider mb-1">03. IDEATE</span>
-                  Drip-feed wild, clever or practical ideas. Watch the AI sort them in parallel into NOW/WOW/HOW vectors!
-                </div>
-                <div className="p-3 bg-slate-905/60 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-emerald-400 font-bold block uppercase tracking-wider mb-1">04. PROTOTYPE & TEST</span>
-                  Draw maps or wireframes with digital sticky notes; then subject your system to stress tests.
-                </div>
-              </div>
+            {/* Learning Summary */}
+            <div className="p-4 sm:p-6 bg-slate-800/50 flex-1 overflow-y-auto">
+              <h3 className="text-sm sm:text-lg font-medium text-white mb-2 sm:mb-3">In this demo you'll discover:</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
+                <li className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="text-indigo-400 mt-0.5 sm:mt-1">•</span>
+                  <span>How the Design Thinking simulation works</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="text-indigo-400 mt-0.5 sm:mt-1">•</span>
+                  <span>What each stage teaches</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="text-indigo-400 mt-0.5 sm:mt-1">•</span>
+                  <span>How your ideas evolve into solutions</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="text-indigo-400 mt-0.5 sm:mt-1">•</span>
+                  <span>How achievements and XP are earned</span>
+                </li>
+              </ul>
+            </div>
 
-              <div className="p-4 bg-cyan-950/20 border border-cyan-500/20 rounded-xl flex items-start gap-3 mt-4">
-                <CheckCircle className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-cyan-200">
-                  You'll gain XP points, elevate your Innovation Level from Observer to System Thinker, and earn locked badges.
-                </p>
-              </div>
-
-              <div className="mt-6 flex justify-end">
+            {/* Footer actions */}
+            <div className="p-4 sm:p-6 border-t border-slate-800 bg-slate-900 flex flex-col gap-3 sm:gap-4 shrink-0">
+              <div className="flex items-center justify-end gap-3 flex-col sm:flex-row">
+                <button
+                  onClick={() => setShowDemoModal(false)}
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium text-slate-300 hover:bg-slate-800 transition-colors order-2 sm:order-1"
+                >
+                  Close
+                </button>
                 <button
                   onClick={() => {
                     setShowDemoModal(false);
@@ -570,9 +584,10 @@ export default function LandingScreen({
                       onSignInWithGoogle();
                     }
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-cyan-400 to-indigo-505 hover:from-cyan-300 hover:to-indigo-400 text-black font-extrabold uppercase tracking-widest rounded-full text-xs transition-all duration-200 cursor-pointer"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium text-white bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2 order-1 sm:order-2"
                 >
-                  {user ? "Enter The Lab Now 🚀" : "Sign In & Enter The Lab Now 🚀"}
+                  Start Simulation
+                  <Play className="w-4 h-4" />
                 </button>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Play, Users, Rocket, Sparkles, Brain, CheckCircle, X, LogIn, LogOut, GraduationCap, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ThemeToggle from "./ThemeToggle";
+import SignOutButton from "./SignOutButton";
 import { UserProfile } from "../types";
 
 interface LandingScreenProps {
@@ -182,30 +183,26 @@ export default function LandingScreen({
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           
           {user && profile && profile.isOnboarded ? (
-            <div className="flex items-center gap-2.5 bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.3)] animate-in fade-in duration-200">
-              {user.photoURL ? (
-                <img referrerPolicy="no-referrer" src={user.photoURL} alt={profile.username} className="w-6.5 h-6.5 rounded-full border border-cyan-400/40 shrink-0" />
-              ) : (
-                <div className="w-6.5 h-6.5 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-505 flex items-center justify-center text-[10px] text-black font-black font-mono shrink-0">
-                  {profile.username?.substring(0, 2).toUpperCase()}
+            <>
+              <div className="flex items-center gap-2.5 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.3)] animate-in fade-in duration-200">
+                {user.photoURL ? (
+                  <img referrerPolicy="no-referrer" src={user.photoURL} alt={profile.username} className="w-6.5 h-6.5 rounded-full border border-cyan-400/40 shrink-0" />
+                ) : (
+                  <div className="w-6.5 h-6.5 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-505 flex items-center justify-center text-[10px] text-black font-black font-mono shrink-0">
+                    {profile.username?.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div className="text-left leading-tight">
+                  <span className="text-xs font-bold text-white block line-clamp-1">{profile.username}</span>
+                  <span className="text-[9px] font-mono font-semibold text-cyan-400 uppercase tracking-widest">{profile.level}</span>
                 </div>
-              )}
-              <div className="text-left leading-tight">
-                <span className="text-xs font-bold text-white block line-clamp-1">{profile.username}</span>
-                <span className="text-[9px] font-mono font-semibold text-cyan-400 uppercase tracking-widest">{profile.level}</span>
               </div>
-              <button 
-                onClick={onSignOut}
-                title="Sign Out"
-                className="ml-2 text-slate-500 hover:text-rose-450 hover:bg-slate-950 p-1 rounded transition-colors cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </div>
+              <SignOutButton onSignOut={onSignOut} />
+            </>
           ) : (
             <span className="hidden sm:flex text-xs bg-slate-850 text-slate-300 border border-slate-700 px-3 py-1 rounded-full items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> SYSTEM: ONLINE

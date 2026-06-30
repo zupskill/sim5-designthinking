@@ -31,6 +31,7 @@ import FinalReport from "./components/FinalReport";
 import RecapScreen from "./components/RecapScreen";
 import ProfileSection from "./components/ProfileSection";
 import ThemeToggle from "./components/ThemeToggle";
+import SignOutButton from "./components/SignOutButton";
 import StageGuidance from "./components/StageGuidance";
 // Supabase integration
 import { 
@@ -620,21 +621,25 @@ export default function App() {
     setUser(null);
     localStorage.removeItem("zupskill_sim_user");
     
-    const defaultProfile: UserProfile = {
-      username: "Beta_Innovator_9",
-      college: "Stanford Design Lab",
+    // Clear simulation-level keys to clear temporary session state
+    handleResetSim();
+    
+    setProfile({
+      uid: "",
+      username: "Innovator",
+      college: "",
       level: "Explorer",
-      xp: 60,
-      unlockedBadgeIds: ["problem-hunter"],
+      xp: 0,
+      unlockedBadgeIds: [],
       problemsSolved: 0,
       ideasGenerated: 0,
       prototypesBuilt: 0,
       isOnboarded: false
-    };
-    setProfile(defaultProfile);
-    localStorage.setItem("zupskill_sim_profile", JSON.stringify(defaultProfile));
+    });
     
-    handleResetSim();
+    // Return the user to the authentication screen
+    setActiveScreen("auth");
+    
     showToast("Signed out successfully.", "info");
   };
 
@@ -1003,7 +1008,7 @@ export default function App() {
     <div className="min-h-screen text-slate-100 font-sans flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
       
       {/* PERSISTENT HEADER BAR (Rendered for in-sim / feed views) */}
-      {(activeScreen === "simulation" || activeScreen === "report") && (
+      {(activeScreen === "simulation" || activeScreen === "report" || activeScreen === "recap") && (
         <header className="bg-slate-950 border-b border-slate-850 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-40 sticky top-0 overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center border border-cyan-400/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] shrink-0">
@@ -1055,6 +1060,8 @@ export default function App() {
                 <span className="text-[10px] text-cyan-400 leading-none">{profile.xp} XP • {profile.level}</span>
               </div>
             </button>
+
+            <SignOutButton onSignOut={handleSignOut} />
 
             {/* Mobile More Menu Toggle */}
             <div className="relative sm:hidden ml-0.5">

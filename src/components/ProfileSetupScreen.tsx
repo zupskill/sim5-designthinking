@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { User, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import ThemeToggle from "./ThemeToggle";
+import SignOutButton from "./SignOutButton";
 
 interface ProfileSetupScreenProps {
   theme: "dark" | "light";
@@ -104,12 +105,7 @@ export default function ProfileSetupScreen({
         <div className="flex items-center gap-3">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           {onSignOut && (
-            <button
-              onClick={onSignOut}
-              className="px-3.5 py-1.5 rounded-full border border-slate-550/30 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 hover:bg-rose-500/5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center gap-1.5"
-            >
-              Sign Out
-            </button>
+            <SignOutButton onSignOut={onSignOut} />
           )}
         </div>
       </div>

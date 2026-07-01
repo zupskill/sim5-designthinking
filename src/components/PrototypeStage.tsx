@@ -632,19 +632,17 @@ export default function PrototypeStage({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 max-h-[340px] overflow-y-auto pr-1">
+                    <div className="flex flex-col gap-2 max-h-[440px] overflow-y-auto pr-3 pb-4">
                       {storyboardScenes.map((scene, idx) => (
-                        <div 
-                          key={scene.id} 
-                          className="p-3 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-850 rounded-2xl flex flex-col justify-between gap-2.5"
-                        >
-                          <div className="space-y-2">
-                            <span className="text-[9px] font-mono font-black text-cyan-450 bg-cyan-950/45 px-2 py-0.5 rounded border border-cyan-500/15 uppercase block w-fit">
-                              Scene {idx + 1}
-                            </span>
-                            
-                            <div className="text-white text-xs font-bold font-sans">
-                              {scene.title}
+                        <div key={scene.id} className="flex flex-col items-center w-full">
+                          <div className="w-full p-4 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-850 rounded-2xl flex flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-mono font-black text-cyan-450 bg-cyan-950/45 px-2.5 py-1 rounded border border-cyan-500/15 uppercase w-fit shrink-0">
+                                Scene {idx + 1}
+                              </span>
+                              <div className="text-white text-sm font-bold font-sans">
+                                {scene.title}
+                              </div>
                             </div>
 
                             <SafeTextInput
@@ -658,10 +656,17 @@ export default function PrototypeStage({
                               }}
                               onSafetyChange={(safe) => setIsStoryboardSafe(prev => ({ ...prev, [scene.id]: safe }))}
                               context={selectedIdea ? `Prototype Storyboard Scene ${idx + 1} (${scene.title}): ${selectedIdea.text}` : "Prototype Storyboard Scene"}
-                              rows={5}
-                              className="w-full bg-slate-950/80 border border-slate-850 p-2 text-xs text-slate-255 rounded-xl focus:outline-none focus:border-cyan-500/50 placeholder:text-slate-600 resize-none font-medium leading-relaxed"
+                              className="w-full bg-slate-950/80 border border-slate-850 p-3 text-sm text-slate-255 rounded-xl focus:outline-none focus:border-cyan-500/50 placeholder:text-slate-600 resize-y min-h-[90px] font-medium leading-relaxed"
                             />
                           </div>
+                          
+                          {idx < storyboardScenes.length - 1 && (
+                            <div className="h-6 w-0.5 bg-gradient-to-b from-cyan-500/30 to-transparent my-1 rounded-full relative">
+                              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-cyan-500/50 text-[10px]">
+                                ↓
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

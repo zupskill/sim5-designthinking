@@ -302,7 +302,7 @@ export default function App() {
               username: cloudProfile.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
               email: session.user.email || "",
               photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
             setProfile({
@@ -370,29 +370,34 @@ export default function App() {
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
-              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
+              username: cloudProfile.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
+              email: session.user.email || "",
+              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap || localFallback?.lastCompletedSimulation
             });
           } else if (localFallback) {
             setProfile({
               ...localFallback,
+              username: localFallback.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
+              email: session.user.email || "",
+              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
               lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
             });
           } else {
-            setProfile({
+            const newProfile: UserProfile = {
               uid: session.user.id,
               username: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
               email: session.user.email || "",
               photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              college: "",
               level: "Explorer",
               xp: 60,
               unlockedBadgeIds: ["problem-hunter"],
               problemsSolved: 0,
               ideasGenerated: 0,
               prototypesBuilt: 0,
-              isOnboarded: false
-            });
+            };
+            setProfile(newProfile);
+            await saveSupabaseProfile(session.user.id, newProfile);
           }
         } catch (err) {
           console.error("Session profile reading error:", err);
@@ -418,7 +423,7 @@ export default function App() {
         setActiveScreen("auth");
       }
     } else {
-      if (activeScreen === "auth") {
+      if (activeScreen === "auth" && profile.uid === user.id) {
         console.log("Profile loaded:", profile);
         console.log("lastCompletedSimulation found:", !!profile.lastCompletedSimulation);
         console.log("activeScreen before routing:", activeScreen);
@@ -432,7 +437,7 @@ export default function App() {
         }
       }
     }
-  }, [user, loadingAuth, activeScreen, profile.lastCompletedSimulation]);
+  }, [user, loadingAuth, activeScreen, profile]);
 
   // Save profile updates automatically to Supabase (Debounced)
   useEffect(() => {
@@ -1002,7 +1007,7 @@ export default function App() {
                   triggerTransition("intro");
                 }}
                 onReviewRecap={() => {
-                  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                  setActiveScreen("landing");
                 }}
               />
             )}
@@ -1043,7 +1048,9 @@ export default function App() {
                 refinedProblem={refinedHowMightWe}
                 prototype={selectedPrototype!}
                 userProfile={profile}
-                onRestart={handleResetSim}
+                onRestart={() => {
+                  setActiveScreen("recap");
+                }}
                 onBackToDashboard={() => setActiveScreen(profile.lastCompletedSimulation ? "recap" : "landing")}
                 theme={theme}
               />

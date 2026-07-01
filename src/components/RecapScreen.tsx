@@ -143,7 +143,7 @@ export default function RecapScreen({ recap, onNewStart, onReviewRecap, theme }:
             className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/25"
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Start New Simulation</span>
+            <span>Continue to New Simulation</span>
           </button>
           
           <button
@@ -155,7 +155,7 @@ export default function RecapScreen({ recap, onNewStart, onReviewRecap, theme }:
             }`}
           >
             <LayoutDashboard className="w-5 h-5" />
-            <span>Review My Recap</span>
+            <span>Stay on Dashboard</span>
           </button>
         </div>
 

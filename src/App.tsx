@@ -273,30 +273,8 @@ export default function App() {
         const { data: { session } } = currentSession ? { data: { session: currentSession } } : await supabase.auth.getSession();
         
         // Also clean up state / URL and redirect to homepage parent after session is fetched
-        if (isCallback) {
-          if (window.opener) {
-            console.log("[Client Auth Callback] Posting session success back to opener window...");
-            window.opener.postMessage({ type: "OAUTH_AUTH_SUCCESS", session: session }, "*");
-            window.close();
-            return;
-          } else {
-            console.log("[Client Auth Callback] No opener found. Checking for ping...");
-            window.addEventListener("message", (e) => {
-              if (e.data?.type === "REQUEST_SESSION") {
-                const sourceWindow = e.source as Window;
-                if (sourceWindow && sourceWindow.postMessage) {
-                  sourceWindow.postMessage({ type: "OAUTH_AUTH_SUCCESS", session: session }, "*");
-                }
-                window.close();
-              }
-            });
-            window.history.replaceState({}, document.title, window.location.origin);
-            if (window.name === "GoogleSignIntoLab") {
-              return; // Stay empty and wait for ping or close
-            }
-          }
-        } else if (window.location.hash.includes("access_token") || window.location.hash.includes("error_description")) {
-          window.history.replaceState({}, document.title, window.location.pathname);
+        if (isCallback || window.location.hash.includes("access_token") || window.location.hash.includes("error_description")) {
+          window.history.replaceState({}, document.title, window.location.origin);
         }
         if (session?.user) {
           setUser(session.user);
@@ -426,86 +404,8 @@ export default function App() {
       setLoadingAuth(false);
     });
 
-    // 3. Listen for popup communications (and pings)
-    const handlePopupMessage = async (event: MessageEvent) => {
-      const origin = event.origin;
-      const isAllowedOrigin = 
-        origin === window.location.origin ||
-        origin.endsWith(".run.app") ||
-        origin.includes(".vercel.app") ||
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1");
-
-      if (!isAllowedOrigin) return;
-      
-      if (event.data?.type === "OAUTH_AUTH_SUCCESS") {
-        setLoadingAuth(true);
-        const receivedSession = event.data?.session;
-        if (receivedSession) {
-          try {
-            await supabase.auth.setSession({
-              access_token: receivedSession.access_token,
-              refresh_token: receivedSession.refresh_token
-            });
-          } catch (e) {
-            console.error("Error writing message session into client:", e);
-          }
-        }
-
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
-          
-          let localFallback: UserProfile | null = null;
-          let savedRecap = null;
-          try {
-            const savedLocal = localStorage.getItem("zupskill_sim_profile");
-            if (savedLocal) {
-              const parsed = JSON.parse(savedLocal);
-              if (parsed && parsed.uid === session.user.id) localFallback = parsed;
-            }
-            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
-            if (recapLocal) savedRecap = JSON.parse(recapLocal);
-          } catch (e) {}
-
-          const cloudProfile = await getSupabaseProfile(session.user.id);
-          if (cloudProfile) {
-            setProfile({
-              ...cloudProfile,
-              isOnboarded: cloudProfile.isOnboarded || localFallback?.isOnboarded || false,
-              lastCompletedSimulation: savedRecap || localFallback?.lastCompletedSimulation
-            });
-          } else if (localFallback) {
-            setProfile({
-              ...localFallback,
-              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
-            });
-          } else {
-            setProfile({
-              uid: session.user.id,
-              username: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              college: "",
-              level: "Explorer",
-              xp: 60,
-              unlockedBadgeIds: ["problem-hunter"],
-              problemsSolved: 0,
-              ideasGenerated: 0,
-              prototypesBuilt: 0,
-              isOnboarded: false
-            });
-          }
-        }
-        setLoadingAuth(false);
-      }
-    };
-    window.addEventListener("message", handlePopupMessage);
-
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener("message", handlePopupMessage);
     };
   }, []);
 
@@ -557,27 +457,11 @@ export default function App() {
     const callbackUrl = `${window.location.origin}/auth/callback`;
     console.log(`[Google Auth] Initiating secure OAuth with callback: ${callbackUrl}`);
     
-    // Open the popup synchronously to avoid popup blockers triggered by async await
-    const width = 540;
-    const height = 640;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-    const popup = window.open(
-      "", // Open an empty popup initially
-      "GoogleSignIntoLab",
-      `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes,scrollbars=yes,location=yes`
-    );
-
-    if (!popup) {
-      console.warn("[Google Auth] Popup blocked. Falling back to full-page redirect, which may fail in iframe.");
-    }
-    
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: callbackUrl,
-          skipBrowserRedirect: true,
           queryParams: {
             prompt: "select_account"
           }
@@ -585,29 +469,7 @@ export default function App() {
       });
       
       if (error) throw error;
-      if (data?.url) {
-        if (popup) {
-          popup.location.href = data.url; // Navigate the pre-opened popup to the OAuth URL
-          showToast("🔑 Google authentication opened in a secure window.", "info");
-          
-          // Fallback mechanism: if window.opener is broken by COOP, ping the popup window repeatedly
-          const pingInterval = setInterval(() => {
-            if (popup.closed) {
-              clearInterval(pingInterval);
-            } else {
-              popup.postMessage({ type: 'REQUEST_SESSION' }, '*');
-            }
-          }, 500);
-        } else {
-          // If popup blocked, the iframe will redirect and probably hit a 403.
-          window.location.href = data.url;
-        }
-      } else {
-        if (popup) popup.close();
-        throw new Error("No authorization URL returned from Supabase Auth.");
-      }
     } catch (err) {
-      if (popup) popup.close();
       console.error("Supabase Google Sign-In failed:", err);
       showToast("❌ Unable to complete Google Authing. Check Supabase redirect config.", "info");
     }

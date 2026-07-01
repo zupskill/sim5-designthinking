@@ -1005,6 +1005,7 @@ export default function App() {
             {activeScreen === "recap" && profile.lastCompletedSimulation && (
               <RecapScreen
                 recap={profile.lastCompletedSimulation}
+                profile={profile}
                 theme={theme}
                 onNewStart={() => {
                   handleResetSim();

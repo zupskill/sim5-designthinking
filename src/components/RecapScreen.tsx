@@ -1,17 +1,30 @@
-import React from 'react';
-import { CompletedSimulationRecap } from '../types';
+import React, { useState } from 'react';
+import { CompletedSimulationRecap, UserProfile } from '../types';
 import { motion } from 'motion/react';
-import { RotateCcw, Trophy, Target, Lightbulb, PenTool, LayoutDashboard, Calendar, Star } from 'lucide-react';
+import { RotateCcw, Trophy, Target, Lightbulb, PenTool, Download, Calendar, Star } from 'lucide-react';
+import { generateRecapReport } from '../utils/pdfGenerator';
 
 interface RecapScreenProps {
   recap: CompletedSimulationRecap;
+  profile: UserProfile;
   onNewStart: () => void;
   onReviewRecap: () => void;
   theme: "light" | "dark";
 }
 
-export default function RecapScreen({ recap, onNewStart, onReviewRecap, theme }: RecapScreenProps) {
+export default function RecapScreen({ recap, profile, onNewStart, onReviewRecap, theme }: RecapScreenProps) {
   const isDark = theme === "dark";
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    try {
+      await generateRecapReport(recap, profile);
+    } catch (e) {
+      console.error(e);
+    }
+    setIsGenerating(false);
+  };
 
   return (
     <div className={`min-h-screen w-full flex flex-col items-center pt-24 pb-12 px-4 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
@@ -147,15 +160,16 @@ export default function RecapScreen({ recap, onNewStart, onReviewRecap, theme }:
           </button>
           
           <button
-            onClick={onReviewRecap}
+            onClick={handleDownload}
+            disabled={isGenerating}
             className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 border ${
               isDark 
                 ? 'bg-slate-900 border-slate-700 hover:bg-slate-800 text-white' 
                 : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-900'
-            }`}
+            } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <LayoutDashboard className="w-5 h-5" />
-            <span>Stay on Dashboard</span>
+            <Download className="w-5 h-5" />
+            <span>{isGenerating ? "Generating..." : "Download Design Thinking Report"}</span>
           </button>
         </div>
 

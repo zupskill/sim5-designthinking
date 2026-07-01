@@ -424,16 +424,20 @@ export default function App() {
       }
     } else {
       if (activeScreen === "auth" && profile.uid === user.id) {
-        console.log("Profile loaded:", profile);
-        console.log("lastCompletedSimulation found:", !!profile.lastCompletedSimulation);
-        console.log("activeScreen before routing:", activeScreen);
+        console.log("=== AUTHENTICATION AUDIT LOGS ===");
+        console.log("✓ Authentication success:", user.id);
+        console.log("✓ Profile loaded:", profile);
+        console.log("✓ Profile source:", profile.xp > 60 || profile.isOnboarded ? "Supabase (or fallback merge)" : "New Initialization");
+        console.log("✓ Recap loaded:", !!profile.lastCompletedSimulation);
+        console.log("✓ Recap source:", profile.lastCompletedSimulation ? "localStorage (zupskill_sim_recap)" : "None");
+        console.log("✓ activeScreen before routing:", activeScreen);
         
         if (profile.lastCompletedSimulation) {
           setActiveScreen("recap");
-          console.log("activeScreen after routing: recap");
+          console.log("✓ activeScreen after routing: recap");
         } else {
           setActiveScreen("landing");
-          console.log("activeScreen after routing: landing");
+          console.log("✓ activeScreen after routing: landing");
         }
       }
     }

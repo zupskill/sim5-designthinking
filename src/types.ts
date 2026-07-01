@@ -93,7 +93,7 @@ export interface UserProfile {
   username: string; // Used as displayName
   email?: string;
   photoURL?: string;
-  level: "Explorer" | "Observer" | "Problem Finder" | "Innovator" | "Visionary" | "System Thinker";
+  level: "Explorer" | "Observer" | "Problem Finder" | "Innovator" | "Visionary" | "System Thinker" | "Creative Thinker" | "Problem Solver" | "Innovation Builder" | "DT Innovation Master";
   xp: number;
   unlockedBadgeIds: string[];
   problemsSolved: number;
@@ -102,8 +102,17 @@ export interface UserProfile {
   completedSimulations?: number;
   lastCompletedSimulation?: CompletedSimulationRecap;
   joinedAt?: string;
-  // Kept as optional to not break any accidental loose references
+  // User Onboarding/Profile
   college?: string;
+  degree?: string;
+  yearOfStudy?: string;
+  primaryInterest?: string;
+  careerGoal?: string;
+  isOnboarded?: boolean;
+  phone?: string;
+  gender?: string;
+  city?: string;
+  yearOfBirth?: string;
 }
 
 export interface CommunitySubmission {

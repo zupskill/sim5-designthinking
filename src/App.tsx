@@ -1034,7 +1034,6 @@ export default function App() {
                 profile={profile}
                 onSignInWithGoogle={handleSignInWithGoogle}
                 onSignOut={handleSignOut}
-                onSaveOnboarding={handleSaveOnboarding}
               />
             )}
 
@@ -1053,9 +1052,9 @@ export default function App() {
                 prototype={selectedPrototype!}
                 userProfile={profile}
                 onRestart={() => {
-                  setActiveScreen("recap");
+                  handleResetSim();
+                  triggerTransition("intro");
                 }}
-                onBackToDashboard={() => setActiveScreen(profile.lastCompletedSimulation ? "recap" : "landing")}
                 theme={theme}
               />
             )}

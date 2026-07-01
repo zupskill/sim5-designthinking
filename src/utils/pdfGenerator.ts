@@ -2,6 +2,35 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Topic, PrototypeData, UserProfile } from "../types";
 
+const sanitizeText = (text: string | undefined | null) => {
+  if (!text) return "";
+  let cleaned = String(text);
+  
+  // Normalize Unicode
+  cleaned = cleaned.normalize("NFKC");
+
+  // Replace special quotes/dashes with ASCII equivalents
+  cleaned = cleaned.replace(/[\u2018\u2019\u201A\u201B\u00B4\u0060]/g, "'");
+  cleaned = cleaned.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+  cleaned = cleaned.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-');
+  cleaned = cleaned.replace(/[\u2026]/g, '...');
+  
+  // Replace non-breaking and other spaces with standard space
+  cleaned = cleaned.replace(/[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g, ' ');
+
+  // Remove emojis and zero width joiners/BOM
+  cleaned = cleaned.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F200}-\u{1F2FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{200B}-\u{200D}\uFEFF]/gu, '');
+
+  // Strip any remaining characters outside the basic Latin / Latin-1 Supplement range
+  // WinAnsi basically supports \x00-\xFF
+  cleaned = cleaned.replace(/[^\x00-\xFF]/g, '');
+
+  // Collapse multiple spaces
+  cleaned = cleaned.replace(/\s+/g, ' ');
+
+  return cleaned.trim();
+};
+
 export const generateDesignThinkingReport = async (
   topic: Topic,
   refinedProblem: string,
@@ -116,12 +145,12 @@ export const generateDesignThinkingReport = async (
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "plain",
-    styles: { cellPadding: 2, fontSize: 11 },
+    styles: { cellPadding: 2, fontSize: 11, overflow: 'linebreak' },
     columnStyles: { 0: { fontStyle: "bold", textColor: [71, 85, 105], cellWidth: 60 }, 1: { textColor: [15, 23, 42] } },
     body: [
-      ["Project / Challenge Name", topic.title],
-      ["Challenge Category", topic.trendingTag || "General"],
-      ["Completion Date", completionDate],
+      ["Project / Challenge Name", sanitizeText(topic.title)],
+      ["Challenge Category", sanitizeText(topic.trendingTag || "General")],
+      ["Completion Date", sanitizeText(completionDate)],
       ["Overall Simulation Score", `${scores.overallScore}%`],
     ],
   });
@@ -152,11 +181,13 @@ export const generateDesignThinkingReport = async (
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "grid",
+    styles: { cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
     headStyles: { fillColor: [248, 250, 252], textColor: [71, 85, 105], fontStyle: "bold" },
     bodyStyles: { textColor: [15, 23, 42] },
     body: [
-      ["Selected Challenge", topic.title],
-      ["Context", topic.description]
+      ["Selected Challenge", sanitizeText(topic.title)],
+      ["Context", sanitizeText(topic.description)]
     ],
   });
   currentY = (doc as any).lastAutoTable.finalY + 12;
@@ -172,12 +203,14 @@ export const generateDesignThinkingReport = async (
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "grid",
+    styles: { cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
     headStyles: { fillColor: [248, 250, 252], textColor: [71, 85, 105], fontStyle: "bold" },
     bodyStyles: { textColor: [15, 23, 42] },
     body: [
-      ["Key User", empathyData?.name || "Not provided"],
-      ["User Pain Points", empathyData?.frustrations ? empathyData.frustrations.join(", ") : "Not provided"],
-      ["Empathy Insights", empathyData?.story || "Not provided"]
+      ["Key User", sanitizeText(empathyData?.name || "Not provided")],
+      ["User Pain Points", sanitizeText(empathyData?.frustrations ? empathyData.frustrations.join(", ") : "Not provided")],
+      ["Empathy Insights", sanitizeText(empathyData?.story || "Not provided")]
     ],
   });
   currentY = (doc as any).lastAutoTable.finalY + 12;
@@ -199,11 +232,13 @@ export const generateDesignThinkingReport = async (
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "grid",
+    styles: { cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
     headStyles: { fillColor: [248, 250, 252], textColor: [71, 85, 105], fontStyle: "bold" },
     bodyStyles: { textColor: [15, 23, 42] },
     body: [
-      ["Problem Statement", defineData?.finalProblem || refinedProblem || "Not provided"],
-      ["How Might We", defineData?.howMightWe || "Not provided"],
+      ["Problem Statement", sanitizeText(defineData?.finalProblem || refinedProblem || "Not provided")],
+      ["How Might We", sanitizeText(defineData?.howMightWe || "Not provided")],
     ],
   });
   currentY = (doc as any).lastAutoTable.finalY + 12;
@@ -221,13 +256,15 @@ export const generateDesignThinkingReport = async (
   currentY += 6;
 
   const ideateBody = topIdeas.length > 0 
-    ? topIdeas.map(idea => ["Idea", idea])
+    ? topIdeas.map(idea => ["Idea", sanitizeText(idea)])
     : [["Ideas", "Not provided"]];
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "grid",
+    styles: { cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
     headStyles: { fillColor: [248, 250, 252], textColor: [71, 85, 105], fontStyle: "bold" },
     bodyStyles: { textColor: [15, 23, 42] },
     body: ideateBody,
@@ -250,11 +287,13 @@ export const generateDesignThinkingReport = async (
     startY: currentY,
     margin: { left: margin, right: margin },
     theme: "grid",
+    styles: { cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
     headStyles: { fillColor: [248, 250, 252], textColor: [71, 85, 105], fontStyle: "bold" },
     bodyStyles: { textColor: [15, 23, 42] },
     body: [
-      ["Title", prototype?.title || "Not provided"],
-      ["Description", prototype?.description || "Not provided"],
+      ["Title", sanitizeText(prototype?.title || "Not provided")],
+      ["Description", sanitizeText(prototype?.description || "Not provided")],
       ["How it solves the problem", "Included in prototype description"],
       ["Expected user benefit", "Included in prototype description"],
     ],
@@ -262,7 +301,15 @@ export const generateDesignThinkingReport = async (
   currentY = (doc as any).lastAutoTable.finalY + 15;
 
   // FINAL OUTCOME
-  if (currentY > pageHeight - 60) {
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  const outcomeText = sanitizeText(prototype?.description || "No final solution documented.");
+  const splitOutcome = doc.splitTextToSize(outcomeText, pageWidth - margin * 2 - 10);
+  const textHeight = splitOutcome.length * 5; // approx 5mm per line
+  const boxHeight = Math.max(30, textHeight + 20); // 20mm for padding and title
+
+  if (currentY + boxHeight > pageHeight - 20) {
     doc.addPage();
     currentY = margin;
   }
@@ -270,7 +317,7 @@ export const generateDesignThinkingReport = async (
   doc.setFillColor(240, 253, 250); // Light teal bg
   doc.setDrawColor(20, 184, 166);
   doc.setLineWidth(0.5);
-  doc.roundedRect(margin, currentY, pageWidth - margin * 2, 35, 3, 3, "FD");
+  doc.roundedRect(margin, currentY, pageWidth - margin * 2, boxHeight, 3, 3, "FD");
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -280,11 +327,9 @@ export const generateDesignThinkingReport = async (
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(15, 23, 42);
-  const outcomeText = prototype?.description || "No final solution documented.";
-  const splitOutcome = doc.splitTextToSize(outcomeText, pageWidth - margin * 2 - 10);
-  doc.text(splitOutcome.slice(0, 4), margin + 5, currentY + 15); // Max 4 lines roughly
+  doc.text(splitOutcome, margin + 5, currentY + 15);
   
-  currentY += 45;
+  currentY += boxHeight + 10;
 
   // OVERALL SIMULATION SCORE & ACHIEVEMENTS
   if (currentY > pageHeight - 70) {
@@ -317,7 +362,7 @@ export const generateDesignThinkingReport = async (
   currentY += 6;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("✔ Empathy   ✔ User Research   ✔ Problem Solving   ✔ Critical Thinking   ✔ Creativity   ✔ Innovation   ✔ Design Thinking", margin, currentY);
+  doc.text("- Empathy   - User Research   - Problem Solving   - Critical Thinking   - Creativity   - Innovation   - Design Thinking", margin, currentY);
   currentY += 15;
 
   // Achievements
@@ -330,7 +375,7 @@ export const generateDesignThinkingReport = async (
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(15, 23, 42);
-    const badgesString = userProfile.unlockedBadgeIds.map((b: string) => `🏆 ${b.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`).join("   ");
+    const badgesString = userProfile.unlockedBadgeIds.map((b: string) => `* ${b.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`).join("   ");
     const splitBadges = doc.splitTextToSize(badgesString, pageWidth - margin * 2);
     doc.text(splitBadges, margin, currentY);
     currentY += splitBadges.length * 6 + 9;

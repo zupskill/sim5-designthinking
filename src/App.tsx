@@ -1053,8 +1053,7 @@ export default function App() {
                 prototype={selectedPrototype!}
                 userProfile={profile}
                 onRestart={() => {
-                  handleResetSim();
-                  triggerTransition("intro");
+                  setActiveScreen("recap");
                 }}
                 theme={theme}
               />

@@ -24,6 +24,7 @@ export default function FinalReport({
 }: FinalReportProps) {
   
   const isDark = theme === "dark";
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // 1. Retrieve the actual simulated scores from localStorage or default comfortably
   const getSimulatedScores = () => {
@@ -459,12 +460,20 @@ export default function FinalReport({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
           <button
             onClick={async () => {
-              const { generateDesignThinkingReport } = await import("../utils/pdfGenerator");
-              await generateDesignThinkingReport(topic, refinedProblem, prototype, scores, userProfile);
+              setIsGenerating(true);
+              try {
+                const { generateDesignThinkingReport } = await import("../utils/pdfGenerator");
+                await generateDesignThinkingReport(topic, refinedProblem, prototype, scores, userProfile);
+              } catch (err) {
+                console.error("Error generating report:", err);
+              } finally {
+                setIsGenerating(false);
+              }
             }}
-            className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-[11px] font-extrabold uppercase tracking-widest rounded-full transition-all duration-300 transform hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(6,182,212,0.3)] hover:shadow-[0_6px_20px_rgba(6,182,212,0.45)]"
+            disabled={isGenerating}
+            className={`w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-[11px] font-extrabold uppercase tracking-widest rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_14px_rgba(6,182,212,0.3)] hover:shadow-[0_6px_20px_rgba(6,182,212,0.45)] ${isGenerating ? 'opacity-70 cursor-not-allowed transform-none' : 'transform hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98]'}`}
           >
-            📄 Download Design Thinking Report
+            📄 {isGenerating ? "Generating..." : "Download Design Thinking Report"}
           </button>
 
           <button

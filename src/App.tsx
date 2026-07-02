@@ -280,45 +280,41 @@ export default function App() {
           setUser(session.user);
           localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
           
-          // Get local fallback
-          let localFallback: UserProfile | null = null;
+          // Use the central auth helper to ensure the user exists in public.users
+          const { getOrCreateUser } = await import('./utils/auth');
+          const currentUser = await getOrCreateUser();
+          
+          if (!currentUser) {
+            console.error("Failed to initialize or fetch central user record.");
+            setUser(null);
+            localStorage.removeItem("zupskill_sim_user");
+            setLoadingAuth(false);
+            return;
+          }
+
+          // Get local fallback for recap
           let savedRecap = null;
           try {
-            const savedLocal = localStorage.getItem("zupskill_sim_profile");
-            if (savedLocal) {
-              const parsed = JSON.parse(savedLocal);
-              if (parsed && parsed.uid === session.user.id) {
-                localFallback = parsed;
-              }
-            }
-            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
+            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${currentUser.id}`);
             if (recapLocal) savedRecap = JSON.parse(recapLocal);
           } catch (e) {}
 
-          const cloudProfile = await getSupabaseProfile(session.user.id);
+          const cloudProfile = await getSupabaseProfile(currentUser.id);
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              username: cloudProfile.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap || localFallback?.lastCompletedSimulation
-            });
-          } else if (localFallback) {
-            setProfile({
-              ...localFallback,
-              username: localFallback.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
+              username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+              email: currentUser.email || "",
+              photoURL: currentUser.avatar_url || "",
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap
             });
           } else {
             // New user direct onboarding
             const newProfile: UserProfile = {
-              uid: session.user.id,
-              username: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
+              uid: currentUser.id,
+              username: currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+              email: currentUser.email || "",
+              photoURL: currentUser.avatar_url || "",
               level: "Explorer",
               xp: 60,
               unlockedBadgeIds: ["problem-hunter"],
@@ -327,8 +323,6 @@ export default function App() {
               prototypesBuilt: 0,
             };
             setProfile(newProfile);
-            // Optionally, save to Supabase immediately for new users
-            await saveSupabaseProfile(session.user.id, newProfile);
           }
         } else {
           setUser(null);
@@ -350,45 +344,41 @@ export default function App() {
         setUser(session.user);
         localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
         
-        // Get local fallback
-        let localFallback: UserProfile | null = null;
+        // Use the central auth helper to ensure the user exists in public.users
+        const { getOrCreateUser } = await import('./utils/auth');
+        const currentUser = await getOrCreateUser();
+        
+        if (!currentUser) {
+          console.error("Failed to initialize or fetch central user record.");
+          setUser(null);
+          localStorage.removeItem("zupskill_sim_user");
+          setLoadingAuth(false);
+          return;
+        }
+
+        // Get local fallback for recap
         let savedRecap = null;
         try {
-          const savedLocal = localStorage.getItem("zupskill_sim_profile");
-          if (savedLocal) {
-            const parsed = JSON.parse(savedLocal);
-            if (parsed && parsed.uid === session.user.id) {
-              localFallback = parsed;
-            }
-          }
-          const recapLocal = localStorage.getItem(`zupskill_sim_recap_${session.user.id}`);
+          const recapLocal = localStorage.getItem(`zupskill_sim_recap_${currentUser.id}`);
           if (recapLocal) savedRecap = JSON.parse(recapLocal);
         } catch (e) {}
 
         try {
-          const cloudProfile = await getSupabaseProfile(session.user.id);
+          const cloudProfile = await getSupabaseProfile(currentUser.id);
           if (cloudProfile) {
             setProfile({
               ...cloudProfile,
-              username: cloudProfile.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap || localFallback?.lastCompletedSimulation
-            });
-          } else if (localFallback) {
-            setProfile({
-              ...localFallback,
-              username: localFallback.username || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
-              lastCompletedSimulation: savedRecap || localFallback.lastCompletedSimulation
+              username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+              email: currentUser.email || "",
+              photoURL: currentUser.avatar_url || "",
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap
             });
           } else {
             const newProfile: UserProfile = {
-              uid: session.user.id,
-              username: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Innovator",
-              email: session.user.email || "",
-              photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
+              uid: currentUser.id,
+              username: currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+              email: currentUser.email || "",
+              photoURL: currentUser.avatar_url || "",
               level: "Explorer",
               xp: 60,
               unlockedBadgeIds: ["problem-hunter"],
@@ -397,7 +387,6 @@ export default function App() {
               prototypesBuilt: 0,
             };
             setProfile(newProfile);
-            await saveSupabaseProfile(session.user.id, newProfile);
           }
         } catch (err) {
           console.error("Session profile reading error:", err);

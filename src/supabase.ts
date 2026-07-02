@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { UserProfile } from "./types";
+import { getOrCreateUser } from "./utils/auth";
 
 const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "";
@@ -18,18 +19,10 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
   if (!isSupabaseConfigured) return null;
 
   try {
-    const authUserResponse = await supabase.auth.getUser();
-    const authUser = authUserResponse.data?.user;
-    if (!authUser || !authUser.email) return null;
+    const user = await getOrCreateUser();
 
-    const { data: user, error: userErr } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", authUser.email)
-      .single();
-
-    if (userErr || !user) {
-      console.warn("Could not find centralized user record.", userErr);
+    if (!user) {
+      console.warn("Could not find or create centralized user record.");
       return null;
     }
 
@@ -114,25 +107,13 @@ export async function saveSimulationResult(userId: string, resultDetails: {
 }): Promise<boolean> {
   if (!isSupabaseConfigured) return false;
   try {
-    const authUserResponse = await supabase.auth.getUser();
-    const authUser = authUserResponse.data?.user;
-    if (!authUser || !authUser.email) {
-      console.error("No authenticated user found.");
-      return false;
-    }
+    const user = await getOrCreateUser();
 
-    const { data: user, error: userErr } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", authUser.email)
-      .single();
-
-    if (userErr || !user) {
+    if (!user) {
       alert("Please log in through the Zup Profile application.");
       return false;
     }
 
-    console.log("Authenticated User:", authUser);
     console.log("Resolved Profile ID:", user.id);
 
     const payload = {

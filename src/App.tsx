@@ -1085,6 +1085,23 @@ export default function App() {
                       selectedTopic={selectedTopic}
                       onSelect={(topic) => {
                         setSelectedTopic(topic);
+                        
+                        let activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (!activityId) {
+                          activityId = `SIM_${Date.now()}`;
+                          localStorage.setItem("zupskill_sim_activity_id", activityId);
+                        }
+
+                        import("./supabase").then(mod => mod.saveStageProgress({
+                          activity_id: activityId!,
+                          task_id: "1.0",
+                          task_name: "Topic Selection",
+                          task_description: "Selected design challenge",
+                          value1: topic.id,
+                          value2: topic.title,
+                          completed: true
+                        }));
+
                         handleAddXP(30);
                         triggerTransition("simulation", 2, `Topic Locked: ${topic.title} ✨`);
                       }}
@@ -1103,6 +1120,19 @@ export default function App() {
                       theme={theme}
                       onNext={() => {
                         setProfile((prev) => ({ ...prev, problemsSolved: prev.problemsSolved + 1 }));
+                        
+                        const activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (activityId) {
+                          import("./supabase").then(mod => mod.saveStageProgress({
+                            activity_id: activityId,
+                            task_id: "2.0",
+                            task_name: "Empathize",
+                            task_description: "Gathered problem observations",
+                            value1: JSON.stringify(problemObservations),
+                            completed: true
+                          }));
+                        }
+
                         triggerTransition("simulation", 3, "Observations collected! Let's focus. 📌");
                       }}
                     />
@@ -1118,6 +1148,18 @@ export default function App() {
                       setRefinedHowMightWe={setRefinedHowMightWe}
                       onShowToast={showToast}
                       onNext={() => {
+                        const activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (activityId) {
+                          import("./supabase").then(mod => mod.saveStageProgress({
+                            activity_id: activityId,
+                            task_id: "3.0",
+                            task_name: "Define",
+                            task_description: "Refined problem into How Might We question",
+                            value1: refinedHowMightWe,
+                            completed: true
+                          }));
+                        }
+
                         triggerTransition("simulation", 4, "Problem defined. Challenge statement saved! 🎯");
                       }}
                     />
@@ -1135,6 +1177,19 @@ export default function App() {
                       onShowToast={showToast}
                       onNext={() => {
                         setProfile((prev) => ({ ...prev, ideasGenerated: prev.ideasGenerated + ideas.length }));
+                        
+                        const activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (activityId) {
+                          import("./supabase").then(mod => mod.saveStageProgress({
+                            activity_id: activityId,
+                            task_id: "4.0",
+                            task_name: "Ideate",
+                            task_description: "Generated solution ideas",
+                            value1: JSON.stringify(ideas),
+                            completed: true
+                          }));
+                        }
+
                         triggerTransition("simulation", 5, "Ideas captured! Pick your favorite. 💡");
                       }}
                     />
@@ -1152,6 +1207,19 @@ export default function App() {
                       setPrototype={setSelectedPrototype}
                       onShowToast={showToast}
                       onNext={() => {
+                        const activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (activityId) {
+                          import("./supabase").then(mod => mod.saveStageProgress({
+                            activity_id: activityId,
+                            task_id: "5.0",
+                            task_name: "Prototype",
+                            task_description: "Built and selected prototype solution",
+                            value1: selectedPrototype?.title || "",
+                            value2: selectedPrototype?.description || "",
+                            completed: true
+                          }));
+                        }
+
                         triggerTransition("simulation", 6, "Prototype ready. Initiating stress tests! 🚀");
                       }}
                     />
@@ -1202,6 +1270,20 @@ export default function App() {
                         setProfile(prev => ({ ...prev, lastCompletedSimulation: recap }));
                         if (user) {
                           localStorage.setItem(`zupskill_sim_recap_${user.id}`, JSON.stringify(recap));
+                        }
+
+                        const activityId = localStorage.getItem("zupskill_sim_activity_id");
+                        if (activityId) {
+                          import("./supabase").then(mod => mod.saveStageProgress({
+                            activity_id: activityId,
+                            task_id: "5.0",
+                            task_name: "Test",
+                            task_description: "Evaluated prototype",
+                            value1: String(overallScore),
+                            value2: JSON.stringify({ creativity, understanding, innovation, overallScore }),
+                            score: overallScore,
+                            completed: true
+                          }));
                         }
 
                         triggerTransition("report", undefined, "Testing complete. Let's inspect final scores! 🧪");

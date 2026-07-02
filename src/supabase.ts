@@ -41,12 +41,40 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
     }
 
     // Map the centralized user and activity data to UserProfile
-    // Calculate simple stats based on activities
-    const completedCount = activities.filter(a => a.completed).length;
+    // Calculate simple stats based on distinct completed activity_ids
+    const completedSimulationIds = new Set(
+      activities.filter(a => a.task_id === "5.0" && a.completed).map(a => a.activity_id)
+    );
+    const completedCount = completedSimulationIds.size;
     
-    // Sort activities by updated_at descending to find the last completed simulation
-    const sortedActivities = [...activities].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-    const latest = sortedActivities[0];
+    const testStages = activities.filter(a => a.task_id === "5.0" && a.completed);
+    testStages.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    const latestTest = testStages[0];
+
+    let lastCompletedSimulation = null;
+    if (latestTest) {
+      const runStages = activities.filter(a => a.activity_id === latestTest.activity_id);
+      const stage1 = runStages.find(a => a.task_id === "1.0");
+      const stage2 = runStages.find(a => a.task_id === "2.0");
+      const stage4 = runStages.find(a => a.task_id === "4.0");
+
+      let parsedScores = { overallScore: latestTest.score || 0, creativity: 0, understanding: 0, innovation: 0 };
+      try {
+        if (latestTest.value2) {
+          parsedScores = JSON.parse(latestTest.value2);
+        }
+      } catch (e) {}
+
+      lastCompletedSimulation = {
+        date: latestTest.updated_at,
+        topicId: stage1?.value1 || "custom",
+        topicTitle: stage1?.value2 || "Custom Challenge",
+        refinedProblem: stage2?.value1 || "Problem definition not found",
+        prototypeTitle: stage4?.value1 || "Untitled Prototype",
+        prototypeDescription: stage4?.value2 || "Prototype description not found",
+        scores: parsedScores
+      };
+    }
 
     return {
       uid: userId, // Keep auth.users.id as uid to satisfy UI constraints
@@ -69,6 +97,7 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
       gender: "",
       city: "",
       yearOfBirth: "",
+      lastCompletedSimulation
     };
   } catch (err) {
     console.error("Error retrieving Supabase profile:", err);
@@ -96,57 +125,91 @@ export async function unlockSupabaseBadge(userId: string, badgeId: string): Prom
 }
 
 /**
- * Store completed simulation results
+ * Store progressive simulation results per stage
  */
-export async function saveSimulationResult(userId: string, resultDetails: {
-  topic: any;
-  problem_definition: string;
-  idea: string;
-  solution: string;
-  overall_score: number;
+export async function saveStageProgress(payloadDetails: {
+  activity_id: string;
+  task_id: string;
+  task_name: string;
+  task_description: string;
+  value1?: string;
+  value2?: string;
+  value3?: string;
+  score?: number;
+  completed: boolean;
 }): Promise<boolean> {
   if (!isSupabaseConfigured) return false;
   try {
     const user = await getOrCreateUser();
 
     if (!user) {
-      alert("Please log in through the Zup Profile application.");
+      console.warn("User not found for saving stage progress.");
       return false;
     }
 
-    console.log("Resolved Profile ID:", user.id);
-
     const payload = {
       user_id: user.id,
-      activity_id: "S003",
-      task_id: resultDetails.topic.id,
-      task_name: resultDetails.topic.title,
-      task_description: resultDetails.topic.description,
-      value1: resultDetails.problem_definition,
-      value2: resultDetails.idea,
-      value3: resultDetails.solution,
-      score: resultDetails.overall_score,
-      completed: true,
+      activity_id: payloadDetails.activity_id,
+      task_id: payloadDetails.task_id,
+      task_name: payloadDetails.task_name,
+      task_description: payloadDetails.task_description,
+      value1: payloadDetails.value1 || null,
+      value2: payloadDetails.value2 || null,
+      value3: payloadDetails.value3 || null,
+      score: payloadDetails.score || 0,
+      completed: payloadDetails.completed,
       updated_at: new Date().toISOString()
     };
 
-    console.log("Payload:", payload);
-    console.log("Supabase Request: upsert to activity_designthinking");
+    console.log(`Checking existing row for user_id=${user.id}, activity_id=${payload.activity_id}, task_id=${payload.task_id}`);
 
-    const { data, error } = await supabase
+    const { data: existing, error: selectErr } = await supabase
       .from("activity_designthinking")
-      .upsert(payload, { onConflict: "user_id,task_id" })
-      .select();
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("activity_id", payload.activity_id)
+      .eq("task_id", payload.task_id)
+      .maybeSingle();
 
-    if (error) {
-      console.error("Supabase Error:", error);
-      throw error;
+    if (selectErr) {
+      console.error("Error checking existing row:", selectErr);
     }
 
-    console.log("Supabase Response:", data);
+    if (existing) {
+      console.log(`Updating existing row ID: ${existing.id}`);
+      const { error: updateErr } = await supabase
+        .from("activity_designthinking")
+        .update(payload)
+        .eq("id", existing.id);
+      
+      if (updateErr) throw updateErr;
+    } else {
+      console.log("Inserting new row...");
+      const { error: insertErr } = await supabase
+        .from("activity_designthinking")
+        .insert(payload);
+        
+      if (insertErr) {
+        if (insertErr.code === '23505') {
+          console.warn("Unique constraint violation. Falling back to update by user_id and task_id...");
+          const { error: fallbackUpdateErr } = await supabase
+            .from("activity_designthinking")
+            .update(payload)
+            .eq("user_id", user.id)
+            .eq("task_id", payload.task_id);
+            
+          if (fallbackUpdateErr) throw fallbackUpdateErr;
+        } else {
+          throw insertErr;
+        }
+      }
+    }
+
+    console.log(`Successfully saved stage ${payload.task_id}`);
     return true;
   } catch (err) {
-    console.error("Error saving simulation results:", err);
+    console.error("Error saving stage progress:", err);
     return false;
   }
 }
+

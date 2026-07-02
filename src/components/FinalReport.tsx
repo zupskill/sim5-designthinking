@@ -3,7 +3,7 @@ import { Topic, PrototypeData, Badge, UserProfile } from "../types";
 import { PREDEFINED_TOPICS, BADGES } from "../data";
 import { Award, Sparkles, Share2, Users, RefreshCw, Heart, CheckCircle, Smartphone, Rocket, Calendar, Landmark, MapPin, Target, Lightbulb, Compass, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-import { isSupabaseConfigured, saveSimulationResult } from "../supabase";
+import { isSupabaseConfigured } from "../supabase";
 
 interface FinalReportProps {
   topic: Topic;
@@ -57,31 +57,6 @@ export default function FinalReport({
   };
 
   const scores = getSimulatedScores();
-
-  // Auto-persist completed simulation attempts to Supabase cloud
-  useEffect(() => {
-    if (isSupabaseConfigured && userProfile.uid) {
-      const saveResultToCloud = async () => {
-        const alreadySaved = sessionStorage.getItem(`zupskill_sim_saved_supabase_${topic.id}`);
-        if (alreadySaved === "true") return;
-
-        const results = {
-          topic: topic,
-          problem_definition: refinedProblem,
-          idea: prototype?.title || "Draft Idea",
-          solution: prototype?.description || "Draft Solution",
-          overall_score: scores.overallScore
-        };
-
-        const success = await saveSimulationResult(userProfile.uid, results);
-        if (success) {
-          sessionStorage.setItem(`zupskill_sim_saved_supabase_${topic.id}`, "true");
-          console.log("Successfully saved completed simulation result to Supabase!");
-        }
-      };
-      saveResultToCloud();
-    }
-  }, [userProfile.uid, topic.id, refinedProblem, prototype, scores.overallScore]);
 
   // Determine achievement details based on dynamic, earned testing scores & tiers
   const getAchievementDetails = (scores: { creativity: number; understanding: number; innovation: number; overallScore: number }) => {

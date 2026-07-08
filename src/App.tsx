@@ -237,43 +237,25 @@ export default function App() {
     };
   });
 
-    // Handle Supabase Sign-In auth state changes
+          // Handle Supabase Sign-In auth state changes
   useEffect(() => {
-    let mounted = true;
-
-    const setupAuth = async () => {
-      setLoadingAuth(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (mounted) {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await loadUserProfile(session.user);
-          }
-        }
-      } catch (err) {
-        console.error("Initial session error:", err);
-      } finally {
-        if (mounted) setLoadingAuth(false);
+    supabase.auth.getSession().then(({ data }) => {
+      console.log("Loaded Supabase session:", data.session);
+      setUser(data.session?.user ?? null);
+      if (data.session?.user) {
+        loadUserProfile(data.session.user);
       }
-    };
-
-    setupAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      setLoadingAuth(true);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await loadUserProfile(session.user);
-      }
-      setLoadingAuth(false);
     });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("AUTH EVENT:", event, session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserProfile(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadUserProfile = async (authUser: any) => {
@@ -358,28 +340,18 @@ export default function App() {
   }, [profile, user]);
 
   const handleSignInWithGoogle = async () => {
-    if (!isSupabaseConfigured) {
-      showToast("⚠️ VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY not set yet on server! Please define them.", "info");
-      return;
-    }
-    
-    console.log(`[Google Auth] Initiating secure OAuth with callback: ${window.location.origin}`);
-    
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            prompt: "select_account"
-          }
+          redirectTo: window.location.origin
         }
       });
-      
-      if (error) throw error;
+      if (error) {
+        console.error("Google login failed:", error);
+      }
     } catch (err) {
-      console.error("Supabase Google Sign-In failed:", err);
-      showToast("❌ Unable to complete Google Authing. Check Supabase redirect config.", "info");
+      console.error("Google login failed:", err);
     }
   };
 
@@ -391,7 +363,7 @@ export default function App() {
     }
     
     setUser(null);
-    localStorage.removeItem("zupskill_sim_user");
+    
     
     // Clear simulation-level keys to clear temporary session state
     handleResetSim();

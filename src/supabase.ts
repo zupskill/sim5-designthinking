@@ -140,8 +140,11 @@ export async function saveStageProgress(payloadDetails: {
 }): Promise<boolean> {
   if (!isSupabaseConfigured) return false;
   try {
-    const user = await getOrCreateUser();
+    console.log("Saving Design Thinking activity...");
+    const authUserResponse = await supabase.auth.getUser();
+    console.log("Current Supabase User:", authUserResponse.data?.user);
 
+    const user = await getOrCreateUser();
     if (!user) {
       console.warn("User not found for saving stage progress.");
       return false;
@@ -149,7 +152,7 @@ export async function saveStageProgress(payloadDetails: {
 
     const payload = {
       user_id: user.id,
-      activity_id: payloadDetails.activity_id,
+      activity_id: "S003",
       task_id: payloadDetails.task_id,
       task_name: payloadDetails.task_name,
       task_description: payloadDetails.task_description,
@@ -161,28 +164,17 @@ export async function saveStageProgress(payloadDetails: {
       updated_at: new Date().toISOString()
     };
 
-    console.log(`Upserting row for user_id=${user.id}, activity_id=${payload.activity_id}, task_id=${payload.task_id}`);
-
-    const { error: upsertErr } = await supabase
+    const { data, error } = await supabase
       .from("activity_designthinking")
-      .upsert(payload, { onConflict: "user_id,activity_id,task_id" });
+      .upsert(payload, { onConflict: "user_id,activity_id,task_id" })
+      .select();
 
-    if (upsertErr) {
-      if (upsertErr.code === '23505') {
-        console.warn("Unique constraint violation. Falling back to update by user_id and task_id...");
-        const { error: fallbackUpdateErr } = await supabase
-          .from("activity_designthinking")
-          .update(payload)
-          .eq("user_id", user.id)
-          .eq("task_id", payload.task_id);
-          
-        if (fallbackUpdateErr) throw fallbackUpdateErr;
-      } else {
-        throw upsertErr;
-      }
+    if (error) {
+      console.error("Supabase save failed:", error);
+      throw error;
     }
 
-    console.log(`Successfully saved stage ${payload.task_id}`);
+    console.log("Design Thinking saved:", data);
     return true;
   } catch (err) {
     console.error("Error saving stage progress:", err);

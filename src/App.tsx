@@ -17,6 +17,8 @@ const ScrollToTop = () => {
 
 // Component imports
 import LandingScreen from "./components/LandingScreen";
+import NewSimConfirmModal from "./components/NewSimConfirmModal";
+import { generateRecapReport } from "./utils/pdfGenerator";
 import AuthScreen from "./components/AuthScreen";
 import ProfileSetupScreen from "./components/ProfileSetupScreen";
 import SimulationIntro from "./components/SimulationIntro";
@@ -214,6 +216,8 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
   const [showAccountChooser, setShowAccountChooser] = useState<boolean>(false);
+  const [showNewSimConfirm, setShowNewSimConfirm] = useState<boolean>(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
 
   // User Profile with dynamic gamified updates
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -669,6 +673,27 @@ export default function App() {
   };
 
   // Safe manual tab stage switching
+    const handleSafeNewStart = () => {
+    setShowNewSimConfirm(true);
+  };
+
+  const handleConfirmNewStart = () => {
+    setShowNewSimConfirm(false);
+    handleResetSim();
+    triggerTransition("intro");
+  };
+
+  const handleDownloadReport = async () => {
+    if (!profile.lastCompletedSimulation) return;
+    setIsGeneratingPDF(true);
+    try {
+      await generateRecapReport(profile.lastCompletedSimulation, profile);
+    } catch (e) {
+      console.error(e);
+    }
+    setIsGeneratingPDF(false);
+  };
+
   const advanceStage = (stageNum: number) => {
     triggerTransition("simulation", stageNum);
   };
@@ -791,6 +816,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-100 font-sans flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+      {/* New Simulation Confirmation Modal */}
+      <NewSimConfirmModal
+        isOpen={showNewSimConfirm}
+        onClose={() => setShowNewSimConfirm(false)}
+        onConfirm={handleConfirmNewStart}
+        onDownload={handleDownloadReport}
+        isDownloading={isGeneratingPDF}
+        theme={theme}
+        profile={profile}
+        topic={selectedTopic}
+        currentStage={currentStage}
+      />
+
       
       {/* PERSISTENT HEADER BAR (Rendered for in-sim / feed views) */}
       {(activeScreen === "simulation" || activeScreen === "report" || activeScreen === "recap") && (
@@ -921,10 +959,7 @@ export default function App() {
                 recap={profile.lastCompletedSimulation}
                 profile={profile}
                 theme={theme}
-                onNewStart={() => {
-                  handleResetSim();
-                  triggerTransition("intro");
-                }}
+                onNewStart={handleSafeNewStart}
                 onReviewRecap={() => {
                   setActiveScreen("landing");
                 }}
@@ -937,10 +972,7 @@ export default function App() {
                 onResume={() => {
                   triggerTransition("simulation", currentStage);
                 }}
-                onNewStart={() => {
-                  handleResetSim();
-                  triggerTransition("intro");
-                }}
+                onNewStart={handleSafeNewStart}
                 hasActiveSession={!!selectedTopic}
                 onExploreCommunity={() => window.open("https://app.zupskill.com/", "_blank", "noopener,noreferrer")}
                 theme={theme}

@@ -459,7 +459,7 @@ export default function FinalReport({
                 : "bg-amber-100 hover:bg-amber-200 border border-amber-350 hover:border-amber-450 text-amber-800"
             }`}
           >
-            🔄 Start New Simulation
+            🔄 View Journey Recap
           </button>
         </div>
 

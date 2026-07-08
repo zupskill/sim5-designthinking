@@ -23,7 +23,9 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
       .from("activity_designthinking")
       .select("*")
       .eq("user_id", userId)
-      .eq("activity_id", "S003");
+      .eq("activity_id", "S003")
+      .order("task_id", { ascending: true })
+      .order("updated_at", { ascending: false });
 
     if (activityErr) {
       console.warn("Could not find activities.", activityErr);
@@ -134,7 +136,7 @@ export async function unlockSupabaseBadge(userId: string, badgeId: string): Prom
 
   const { data, error } = await supabase
     .from("activity_designthinking")
-    .upsert(payload, { onConflict: "user_id,activity_id,task_id" })
+    .insert([payload])
     .select();
     
   console.log("TEST SAVE SUCCESS", data);
@@ -181,7 +183,7 @@ export async function saveStageProgress(payloadDetails: {
 
     const { data, error } = await supabase
       .from("activity_designthinking")
-      .upsert(payload, { onConflict: "user_id,activity_id,task_id" })
+      .insert([payload])
       .select();
 
     if (error) {

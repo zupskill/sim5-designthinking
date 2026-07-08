@@ -292,13 +292,6 @@ export default function App() {
             return;
           }
 
-          // Get local fallback for recap
-          let savedRecap = null;
-          try {
-            const recapLocal = localStorage.getItem(`zupskill_sim_recap_${currentUser.id}`);
-            if (recapLocal) savedRecap = JSON.parse(recapLocal);
-          } catch (e) {}
-
           const cloudProfile = await getSupabaseProfile(currentUser.id);
           if (cloudProfile) {
             setProfile({
@@ -306,7 +299,7 @@ export default function App() {
               username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
               email: currentUser.email || "",
               photoURL: currentUser.avatar_url || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation
             });
           } else {
             // New user direct onboarding
@@ -356,13 +349,6 @@ export default function App() {
           return;
         }
 
-        // Get local fallback for recap
-        let savedRecap = null;
-        try {
-          const recapLocal = localStorage.getItem(`zupskill_sim_recap_${currentUser.id}`);
-          if (recapLocal) savedRecap = JSON.parse(recapLocal);
-        } catch (e) {}
-
         try {
           const cloudProfile = await getSupabaseProfile(currentUser.id);
           if (cloudProfile) {
@@ -371,7 +357,7 @@ export default function App() {
               username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
               email: currentUser.email || "",
               photoURL: currentUser.avatar_url || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation || savedRecap
+              lastCompletedSimulation: cloudProfile.lastCompletedSimulation
             });
           } else {
             const newProfile: UserProfile = {
@@ -769,7 +755,7 @@ export default function App() {
   };
 
   // Standard reset simulation
-  const handleResetSim = () => {
+  const handleResetSim = async () => {
     // Clear simulation-level keys
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -782,6 +768,26 @@ export default function App() {
       }
     }
     keysToRemove.forEach((k) => localStorage.removeItem(k));
+
+    if (user) {
+      try {
+        console.log("Clearing previous journey from Supabase...");
+        const { supabase } = await import("./supabase");
+        const { error } = await supabase
+          .from("activity_designthinking")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("activity_id", "S003");
+        
+        if (error) {
+          console.error("Error clearing Supabase journey:", error);
+        } else {
+          console.log("Previous journey cleared");
+        }
+      } catch (err) {
+        console.error("Failed to clear Supabase data:", err);
+      }
+    }
 
     setSelectedTopic(null);
     setProblemObservations([]);
@@ -1250,17 +1256,15 @@ export default function App() {
                         };
 
                         setProfile(prev => ({ ...prev, lastCompletedSimulation: recap }));
-                        if (user) {
-                          localStorage.setItem(`zupskill_sim_recap_${user.id}`, JSON.stringify(recap));
-                        }
 
                         import("./supabase").then(mod => mod.saveStageProgress({
                             activity_id: "S003",
                             task_id: "5.0",
                             task_name: "Test",
                             task_description: "Evaluated prototype",
-                            value1: String(overallScore),
-                            value2: JSON.stringify({ creativity, understanding, innovation, overallScore }),
+                            value1: selectedPrototype?.title || "",
+                            value2: selectedPrototype?.description || "",
+                            value3: JSON.stringify({ creativity, understanding, innovation, overallScore }),
                             score: overallScore,
                             completed: true
                           }));

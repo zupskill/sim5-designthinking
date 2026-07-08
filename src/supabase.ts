@@ -29,7 +29,8 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
     const { data: activities, error: activityErr } = await supabase
       .from("activity_designthinking")
       .select("*")
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .eq("activity_id", "S003");
 
     if (activityErr) {
       console.warn("Could not find activities.", activityErr);
@@ -41,37 +42,28 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
     }
 
     // Map the centralized user and activity data to UserProfile
-    // Calculate simple stats based on distinct completed activity_ids
-    const completedSimulationIds = new Set(
-      activities.filter(a => a.task_id === "5.0" && a.completed).map(a => a.activity_id)
-    );
-    const completedCount = completedSimulationIds.size;
+    const testStage = activities.find(a => a.task_id === "5.0" && a.completed);
+    const completedCount = testStage ? 1 : 0;
     
-    const testStages = activities.filter(a => a.task_id === "5.0" && a.completed);
-    testStages.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-    const latestTest = testStages[0];
-
     let lastCompletedSimulation = null;
-    if (latestTest) {
-      const runStages = activities.filter(a => a.activity_id === latestTest.activity_id);
-      const stage1 = runStages.find(a => a.task_id === "1.0");
-      const stage2 = runStages.find(a => a.task_id === "2.0");
-      const stage4 = runStages.find(a => a.task_id === "4.0");
+    if (testStage) {
+      const stage1 = activities.find(a => a.task_id === "1.0");
+      const stage2 = activities.find(a => a.task_id === "2.0");
 
-      let parsedScores = { overallScore: latestTest.score || 0, creativity: 0, understanding: 0, innovation: 0 };
+      let parsedScores = { overallScore: testStage.score || 0, creativity: 0, understanding: 0, innovation: 0 };
       try {
-        if (latestTest.value2) {
-          parsedScores = JSON.parse(latestTest.value2);
+        if (testStage.value3) {
+          parsedScores = JSON.parse(testStage.value3);
         }
       } catch (e) {}
 
       lastCompletedSimulation = {
-        date: latestTest.updated_at,
+        date: testStage.updated_at,
         topicId: stage1?.value1 || "custom",
         topicTitle: stage1?.value2 || "Custom Challenge",
         refinedProblem: stage2?.value1 || "Problem definition not found",
-        prototypeTitle: stage4?.value1 || "Untitled Prototype",
-        prototypeDescription: stage4?.value2 || "Prototype description not found",
+        prototypeTitle: testStage.value1 || "Untitled Prototype",
+        prototypeDescription: testStage.value2 || "Prototype description not found",
         scores: parsedScores
       };
     }

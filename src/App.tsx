@@ -237,13 +237,16 @@ export default function App() {
     };
   });
 
-          // Handle Supabase Sign-In auth state changes
+            // Handle Supabase Sign-In auth state changes
   useEffect(() => {
+    setLoadingAuth(true);
     supabase.auth.getSession().then(({ data }) => {
       console.log("Loaded Supabase session:", data.session);
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
-        loadUserProfile(data.session.user);
+        loadUserProfile(data.session.user).finally(() => setLoadingAuth(false));
+      } else {
+        setLoadingAuth(false);
       }
     });
 
@@ -251,7 +254,10 @@ export default function App() {
       console.log("AUTH EVENT:", event, session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user);
+        setLoadingAuth(true);
+        loadUserProfile(session.user).finally(() => setLoadingAuth(false));
+      } else {
+        setLoadingAuth(false);
       }
     });
 

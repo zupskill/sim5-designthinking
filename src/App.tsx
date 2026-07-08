@@ -211,16 +211,7 @@ export default function App() {
   };
 
   // Google Auth User states
-  const [user, setUser] = useState<any>(() => {
-    try {
-      const savedUser = localStorage.getItem("zupskill_sim_user");
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        if (parsed && parsed.id) return parsed;
-      }
-    } catch (e) {}
-    return null;
-  });
+  const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
   const [showAccountChooser, setShowAccountChooser] = useState<boolean>(false);
 
@@ -246,148 +237,82 @@ export default function App() {
     };
   });
 
-  // Handle Supabase Sign-In auth state changes
+    // Handle Supabase Sign-In auth state changes
   useEffect(() => {
-    // 1. Initial Session Check
-    const getInitialSession = async () => {
+    let mounted = true;
+
+    const setupAuth = async () => {
       setLoadingAuth(true);
       try {
-        let currentSession = null;
-        let isCallback = window.location.pathname.startsWith("/auth/callback");
-        
-        // Handle client-side OAuth callback exchange (useful for static Vercel hosts)
-        if (isCallback) {
-          const params = new URLSearchParams(window.location.search);
-          const code = params.get("code");
-          if (code) {
-            console.log("[Client Auth Callback] Exchanging code for session...");
-            try {
-              const { data } = await supabase.auth.exchangeCodeForSession(code);
-              currentSession = data.session;
-            } catch (e) {
-              console.error("[Client Auth Callback] Exchange failed:", e);
-            }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await loadUserProfile(session.user);
           }
-        }
-
-        const { data: { session } } = currentSession ? { data: { session: currentSession } } : await supabase.auth.getSession();
-        
-        // Also clean up state / URL and redirect to homepage parent after session is fetched
-        if (isCallback || window.location.hash.includes("access_token") || window.location.hash.includes("error_description")) {
-          window.history.replaceState({}, document.title, window.location.origin);
-        }
-        if (session?.user) {
-          setUser(session.user);
-          localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
-          
-          // Use the central auth helper to ensure the user exists in public.users
-          const { getOrCreateUser } = await import('./utils/auth');
-          const currentUser = await getOrCreateUser();
-          
-          if (!currentUser) {
-            console.error("Failed to initialize or fetch central user record.");
-            setUser(null);
-            localStorage.removeItem("zupskill_sim_user");
-            setLoadingAuth(false);
-            return;
-          }
-
-          const cloudProfile = await getSupabaseProfile(currentUser.id);
-          if (cloudProfile) {
-            setProfile({
-              ...cloudProfile,
-              username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
-              email: currentUser.email || "",
-              photoURL: currentUser.avatar_url || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation
-            });
-          } else {
-            // New user direct onboarding
-            const newProfile: UserProfile = {
-              uid: currentUser.id,
-              username: currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
-              email: currentUser.email || "",
-              photoURL: currentUser.avatar_url || "",
-              level: "Explorer",
-              xp: 60,
-              unlockedBadgeIds: ["problem-hunter"],
-              problemsSolved: 0,
-              ideasGenerated: 0,
-              prototypesBuilt: 0,
-            };
-            setProfile(newProfile);
-          }
-        } else {
-          setUser(null);
-          localStorage.removeItem("zupskill_sim_user");
         }
       } catch (err) {
         console.error("Initial session error:", err);
       } finally {
-        setLoadingAuth(false);
+        if (mounted) setLoadingAuth(false);
       }
     };
 
-    getInitialSession();
+    setupAuth();
 
-    // 2. Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
       setLoadingAuth(true);
+      setUser(session?.user ?? null);
       if (session?.user) {
-        setUser(session.user);
-        localStorage.setItem("zupskill_sim_user", JSON.stringify(session.user));
-        
-        // Use the central auth helper to ensure the user exists in public.users
-        const { getOrCreateUser } = await import('./utils/auth');
-        const currentUser = await getOrCreateUser();
-        
-        if (!currentUser) {
-          console.error("Failed to initialize or fetch central user record.");
-          setUser(null);
-          localStorage.removeItem("zupskill_sim_user");
-          setLoadingAuth(false);
-          return;
-        }
-
-        try {
-          const cloudProfile = await getSupabaseProfile(currentUser.id);
-          if (cloudProfile) {
-            setProfile({
-              ...cloudProfile,
-              username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
-              email: currentUser.email || "",
-              photoURL: currentUser.avatar_url || "",
-              lastCompletedSimulation: cloudProfile.lastCompletedSimulation
-            });
-          } else {
-            const newProfile: UserProfile = {
-              uid: currentUser.id,
-              username: currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
-              email: currentUser.email || "",
-              photoURL: currentUser.avatar_url || "",
-              level: "Explorer",
-              xp: 60,
-              unlockedBadgeIds: ["problem-hunter"],
-              problemsSolved: 0,
-              ideasGenerated: 0,
-              prototypesBuilt: 0,
-            };
-            setProfile(newProfile);
-          }
-        } catch (err) {
-          console.error("Session profile reading error:", err);
-        }
-      } else {
-        setUser(null);
-        localStorage.removeItem("zupskill_sim_user");
+        await loadUserProfile(session.user);
       }
       setLoadingAuth(false);
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
+
+  const loadUserProfile = async (authUser: any) => {
+    try {
+      const { getOrCreateUser } = await import('./utils/auth');
+      const currentUser = await getOrCreateUser();
+      
+      if (!currentUser) {
+        console.error("Failed to initialize central user record.");
+        return;
+      }
+      
+      const cloudProfile = await getSupabaseProfile(currentUser.id);
+      if (cloudProfile) {
+        setProfile(prev => ({
+          ...prev,
+          ...cloudProfile,
+          username: cloudProfile.username || currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+          email: currentUser.email || "",
+          photoURL: currentUser.avatar_url || "",
+          lastCompletedSimulation: cloudProfile.lastCompletedSimulation || prev.lastCompletedSimulation
+        }));
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          uid: currentUser.id,
+          username: currentUser.full_name || currentUser.email?.split("@")[0] || "Innovator",
+          email: currentUser.email || "",
+          photoURL: currentUser.avatar_url || "",
+          level: "Explorer",
+          xp: 60,
+          unlockedBadgeIds: ["problem-hunter"],
+          isOnboarded: false
+        }));
+      }
+    } catch (err) {
+      console.error("Profile load error:", err);
+    }
+  };
 
   // Redirect to Auth or Onboarding based on session status
   useEffect(() => {
@@ -438,14 +363,13 @@ export default function App() {
       return;
     }
     
-    const callbackUrl = `${window.location.origin}/auth/callback`;
-    console.log(`[Google Auth] Initiating secure OAuth with callback: ${callbackUrl}`);
+    console.log(`[Google Auth] Initiating secure OAuth with callback: ${window.location.origin}`);
     
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: callbackUrl,
+          redirectTo: window.location.origin,
           queryParams: {
             prompt: "select_account"
           }

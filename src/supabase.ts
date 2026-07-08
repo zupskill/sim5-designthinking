@@ -19,17 +19,10 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
   if (!isSupabaseConfigured) return null;
 
   try {
-    const user = await getOrCreateUser();
-
-    if (!user) {
-      console.warn("Could not find or create centralized user record.");
-      return null;
-    }
-
     const { data: activities, error: activityErr } = await supabase
       .from("activity_designthinking")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("activity_id", "S003");
 
     if (activityErr) {
@@ -37,18 +30,16 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
     }
     
     if (!activities || activities.length === 0) {
-      // If no activity rows exist, return null so local logic initializes fresh
       return null;
     }
 
-    // Map the centralized user and activity data to UserProfile
-    const testStage = activities.find(a => a.task_id === "5.0" && a.completed);
+    const testStage = activities.find(a => a.task_id === 5);
     const completedCount = testStage ? 1 : 0;
     
     let lastCompletedSimulation = null;
     if (testStage) {
-      const stage1 = activities.find(a => a.task_id === "1.0");
-      const stage2 = activities.find(a => a.task_id === "2.0");
+      const stage1 = activities.find(a => a.task_id === 1);
+      const stage2 = activities.find(a => a.task_id === 2);
 
       let parsedScores = { overallScore: testStage.score || 0, creativity: 0, understanding: 0, innovation: 0 };
       try {
@@ -69,17 +60,17 @@ export async function getSupabaseProfile(userId: string): Promise<UserProfile | 
     }
 
     return {
-      uid: userId, // Keep auth.users.id as uid to satisfy UI constraints
-      email: user.email || "",
-      username: user.full_name || user.email?.split("@")[0] || "Innovator",
-      photoURL: user.avatar_url || "",
+      uid: userId,
+      email: "",
+      username: "Innovator",
+      photoURL: "",
       college: "",
       degree: "",
       yearOfStudy: "",
       primaryInterest: "",
       careerGoal: "",
       isOnboarded: true,
-      xp: 60 + (completedCount * 100), // example derivation
+      xp: 60 + (completedCount * 100),
       level: completedCount >= 1 ? "Innovator" : "Explorer",
       unlockedBadgeIds: ["problem-hunter"],
       problemsSolved: completedCount,
@@ -119,6 +110,37 @@ export async function unlockSupabaseBadge(userId: string, badgeId: string): Prom
 /**
  * Store progressive simulation results per stage
  */
+
+(window as any).testSave = async () => {
+  console.log("🔥 RUNNING testSave()...");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (!user) {
+    console.error("TEST SAVE FAILED: No authenticated user", authError);
+    return;
+  }
+  
+  console.log("Current Supabase User:", user);
+  
+  const payload = {
+    user_id: user.id,
+    activity_id: "S003",
+    task_id: 999,
+    task_name: "TEST",
+    task_description: "Testing Supabase",
+    value1: "hello",
+    completed: true,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from("activity_designthinking")
+    .upsert(payload, { onConflict: "user_id,activity_id,task_id" })
+    .select();
+    
+  console.log("TEST SAVE SUCCESS", data);
+  if (error) console.error("TEST ERROR:", error);
+};
+
 export async function saveStageProgress(payloadDetails: {
   activity_id: string;
   task_id: string;
@@ -132,20 +154,21 @@ export async function saveStageProgress(payloadDetails: {
 }): Promise<boolean> {
   if (!isSupabaseConfigured) return false;
   try {
+    console.log("🔥 DESIGN THINKING SAVE FUNCTION CALLED");
+    console.log("Supabase Client:", supabase);
     console.log("Saving Design Thinking activity...");
-    const authUserResponse = await supabase.auth.getUser();
-    console.log("Current Supabase User:", authUserResponse.data?.user);
-
-    const user = await getOrCreateUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log("CURRENT USER:", user);
+    
     if (!user) {
-      console.warn("User not found for saving stage progress.");
+      console.warn("User not found for saving stage progress.", authError);
       return false;
     }
 
     const payload = {
       user_id: user.id,
       activity_id: "S003",
-      task_id: payloadDetails.task_id,
+      task_id: parseFloat(payloadDetails.task_id), // Cast to float/int
       task_name: payloadDetails.task_name,
       task_description: payloadDetails.task_description,
       value1: payloadDetails.value1 || null,
@@ -162,7 +185,7 @@ export async function saveStageProgress(payloadDetails: {
       .select();
 
     if (error) {
-      console.error("Supabase save failed:", error);
+      console.error("SUPABASE INSERT FAILED:", error);
       throw error;
     }
 

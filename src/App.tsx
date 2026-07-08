@@ -237,18 +237,35 @@ export default function App() {
     };
   });
 
-            // Handle Supabase Sign-In auth state changes
+              // Handle Supabase Sign-In auth state changes
   useEffect(() => {
     setLoadingAuth(true);
-    supabase.auth.getSession().then(({ data }) => {
-      console.log("Loaded Supabase session:", data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) {
-        loadUserProfile(data.session.user).finally(() => setLoadingAuth(false));
-      } else {
-        setLoadingAuth(false);
+    
+    const initializeAuth = async () => {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get('code');
+        if (code) {
+          console.log("Exchanging code for session...");
+          await supabase.auth.exchangeCodeForSession(code);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (e) {
+        console.error("Code exchange failed:", e);
       }
-    });
+      
+      supabase.auth.getSession().then(({ data }) => {
+        console.log("Loaded Supabase session:", data.session);
+        setUser(data.session?.user ?? null);
+        if (data.session?.user) {
+          loadUserProfile(data.session.user).finally(() => setLoadingAuth(false));
+        } else {
+          setLoadingAuth(false);
+        }
+      });
+    };
+    
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("AUTH EVENT:", event, session);

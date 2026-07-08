@@ -161,47 +161,24 @@ export async function saveStageProgress(payloadDetails: {
       updated_at: new Date().toISOString()
     };
 
-    console.log(`Checking existing row for user_id=${user.id}, activity_id=${payload.activity_id}, task_id=${payload.task_id}`);
+    console.log(`Upserting row for user_id=${user.id}, activity_id=${payload.activity_id}, task_id=${payload.task_id}`);
 
-    const { data: existing, error: selectErr } = await supabase
+    const { error: upsertErr } = await supabase
       .from("activity_designthinking")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("activity_id", payload.activity_id)
-      .eq("task_id", payload.task_id)
-      .maybeSingle();
+      .upsert(payload, { onConflict: "user_id,activity_id,task_id" });
 
-    if (selectErr) {
-      console.error("Error checking existing row:", selectErr);
-    }
-
-    if (existing) {
-      console.log(`Updating existing row ID: ${existing.id}`);
-      const { error: updateErr } = await supabase
-        .from("activity_designthinking")
-        .update(payload)
-        .eq("id", existing.id);
-      
-      if (updateErr) throw updateErr;
-    } else {
-      console.log("Inserting new row...");
-      const { error: insertErr } = await supabase
-        .from("activity_designthinking")
-        .insert(payload);
-        
-      if (insertErr) {
-        if (insertErr.code === '23505') {
-          console.warn("Unique constraint violation. Falling back to update by user_id and task_id...");
-          const { error: fallbackUpdateErr } = await supabase
-            .from("activity_designthinking")
-            .update(payload)
-            .eq("user_id", user.id)
-            .eq("task_id", payload.task_id);
-            
-          if (fallbackUpdateErr) throw fallbackUpdateErr;
-        } else {
-          throw insertErr;
-        }
+    if (upsertErr) {
+      if (upsertErr.code === '23505') {
+        console.warn("Unique constraint violation. Falling back to update by user_id and task_id...");
+        const { error: fallbackUpdateErr } = await supabase
+          .from("activity_designthinking")
+          .update(payload)
+          .eq("user_id", user.id)
+          .eq("task_id", payload.task_id);
+          
+        if (fallbackUpdateErr) throw fallbackUpdateErr;
+      } else {
+        throw upsertErr;
       }
     }
 

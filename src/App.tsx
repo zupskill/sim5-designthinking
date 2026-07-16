@@ -1172,7 +1172,7 @@ export default function App() {
                       prototype={selectedPrototype}
                       onAddXP={handleAddXP}
                       onUnlockBadge={handleUnlockBadge}
-                      onNext={() => {
+                      onNext={async () => {
                         // Compute Recap
                         const savedTesting = localStorage.getItem(`zupskill_testing_${selectedTopic.id}`);
                         let creativity = 75, understanding = 80, innovation = 70;
@@ -1219,6 +1219,19 @@ export default function App() {
                             score: overallScore,
                             completed: true
                           }));
+
+                        try {
+                          await supabase.functions.invoke("progress-engine", {
+                            body: {
+                              action: "complete_simulator",
+                              activity_id: "S003",
+                              activity_name: "Design Thinking",
+                              final_score: overallScore
+                            }
+                          });
+                        } catch (err) {
+                          console.error("Failed to update achievements", err);
+                        }
 
                         triggerTransition("report", undefined, "Testing complete. Let's inspect final scores! 🧪");
                       }}

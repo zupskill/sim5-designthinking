@@ -1208,7 +1208,9 @@ export default function App() {
 
                         setProfile(prev => ({ ...prev, lastCompletedSimulation: recap }));
 
-                        import("./supabase").then(mod => mod.saveStageProgress({
+                        try {
+                          const { saveStageProgress } = await import("./supabase");
+                          await saveStageProgress({
                             activity_id: "S003",
                             task_id: "5.0",
                             task_name: "Test",
@@ -1218,7 +1220,10 @@ export default function App() {
                             value3: JSON.stringify({ creativity, understanding, innovation, overallScore }),
                             score: overallScore,
                             completed: true
-                          }));
+                          });
+                        } catch (err) {
+                          console.error("Failed to save stage progress", err);
+                        }
 
                         try {
                           await supabase.functions.invoke("progress-engine", {
